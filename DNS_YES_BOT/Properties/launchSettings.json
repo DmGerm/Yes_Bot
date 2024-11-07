@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DNS_YES_BOT": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

@@ -1,11 +1,19 @@
-﻿using Telegram.Bot;
+﻿using Microsoft.Extensions.Configuration;
+using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 using var cts = new CancellationTokenSource();
-var bot = new TelegramBotClient("7604420018:AAH2SlKhFP78Neg0F86qGV1ARk_19dzRpac", cancellationToken: cts.Token);
+
+var builder = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsetting.json", optional: true, reloadOnChange: true);
+IConfiguration configuration = builder.Build();
+var botToken = configuration["Telegram:BotToken"] ?? "";
+
+var bot = new TelegramBotClient(botToken, cancellationToken: cts.Token);
 var me = await bot.GetMe();
 bot.OnError += OnError;
 bot.OnMessage += OnMessage;
@@ -17,7 +25,8 @@ cts.Cancel();
 
 async Task OnError(Exception exception, HandleErrorSource source)
 {
-    Console.WriteLine(exception); 
+    Console.WriteLine(exception);
+    await Task.CompletedTask;
 }
 
 

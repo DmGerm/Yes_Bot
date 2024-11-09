@@ -8,10 +8,11 @@ using Telegram.Bot.Types.ReplyMarkups;
 using var cts = new CancellationTokenSource();
 
 var builder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsetting.json", optional: true, reloadOnChange: true);
+                    .SetBasePath(AppContext.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 IConfiguration configuration = builder.Build();
 var botToken = configuration["Telegram:BotToken"] ?? "";
+
 
 var bot = new TelegramBotClient(botToken, cancellationToken: cts.Token);
 var me = await bot.GetMe();

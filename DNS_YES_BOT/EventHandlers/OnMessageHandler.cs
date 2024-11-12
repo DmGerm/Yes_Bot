@@ -1,12 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    internal class OnMessageHandler
+    public class OnMessageHandler(TelegramBotClient telegramBotClient)
     {
+        private readonly TelegramBotClient _botClient = telegramBotClient;
+        public async Task OnMessage(Message msg, UpdateType type)
+        {
+            if (msg.Text == "/start")
+            {
+                await _botClient.SendMessage(msg.Chat, "Welcome! Pick one direction",
+                    replyMarkup: new InlineKeyboardMarkup().AddButtons("Left", "Right"));
+            }
+        }
     }
 }

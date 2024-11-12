@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Telegram.Bot.Polling;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    internal class OnErrorHandler
+    public class OnErrorHandler
     {
+        public static async Task OnError(Exception exception, HandleErrorSource source)
+        {
+            Console.WriteLine(exception);
+            await Task.CompletedTask;
+        }
     }
 }

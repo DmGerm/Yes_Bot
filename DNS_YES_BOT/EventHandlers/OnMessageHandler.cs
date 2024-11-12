@@ -12,8 +12,8 @@ namespace DNS_YES_BOT.EventHandlers
         {
             if (msg.Text == "/start")
             {
-                await _botClient.SendMessage(msg.Chat, "Welcome! Pick one direction",
-                    replyMarkup: new InlineKeyboardMarkup().AddButtons("Left", "Right"));
+                await _botClient.SendMessage(msg.Chat, "Выберите ваш филиал, чтобы подтвердить прочтение информации!",
+                    replyMarkup: new InlineKeyboardMarkup().AddButtons("Выборг Советская", "Тихвин"));
             }
         }
     }

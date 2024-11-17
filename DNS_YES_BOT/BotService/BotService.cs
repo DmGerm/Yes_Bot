@@ -16,7 +16,7 @@ namespace DNS_YES_BOT.Service
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
 
             OnMessageHandler messageHandler = new(bot);
-            OnUpdateHandler onUpdateHandler = new(bot);
+            OnUpdateHandler onUpdateHandler = new(bot,_userRepo);
 
             var me = await bot.GetMe();
 

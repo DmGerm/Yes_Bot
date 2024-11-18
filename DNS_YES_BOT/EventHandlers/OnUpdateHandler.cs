@@ -19,11 +19,11 @@ namespace DNS_YES_BOT.EventHandlers
                 
                 if (! await _userRepo.UserIdExistsAsync(id))
                 {
-                    await _userRepo.AddUserIdAsync(id);
-                    await _botClient.SendMessage(query.Message!.Chat, $"Пользователь {query.From} добавил нового администратора {query.Data}");
+                    await _userRepo.AddAdminAsync(id);
+                    await _botClient.SendMessage(query.Message!.Chat, $"Пользователь {query.From} добавил нового администратора {id}");
                 } else
                 {
-                    await _botClient.SendMessage(query.Message!.Chat, $"Пользователь {query.From} пытается добавить администратора {query.Data}, но он уже существует!");
+                    await _botClient.SendMessage(query.Message!.Chat, $"Пользователь {query.From} пытается добавить администратора {id}, но он уже существует!");
                 }
             }
 

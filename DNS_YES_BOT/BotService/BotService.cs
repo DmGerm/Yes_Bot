@@ -33,14 +33,24 @@ namespace DNS_YES_BOT.BotService
 
         private async Task SetBotCommandsAsync(ITelegramBotClient botClient)
         {
-            var commands = new[]
-            {
-                new BotCommand { Command = "start", Description = "Запустить сбор информации" },
-                new BotCommand { Command = "enter", Description = "Авторизация в боте" },
-                //new BotCommand { Command = "info", Description = "Получить информацию о боте" },
-            };
+            if (botClient == null)
+                throw new ArgumentNullException(nameof(botClient));
 
-            await botClient.SetMyCommands(commands);
+            var commands = new List<BotCommand>
+                  {
+                       new() { Command = "authorize", Description = "Авторизоваться" },
+                       new() { Command = "start", Description = "Запустить сбор информации" },
+                       new() { Command = "add_admin", Description = "Добавить администратора" }
+                  };
+
+            try
+            {
+                await botClient.SetMyCommands(commands);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to set bot commands", ex);
+            }
         }
     }
 }

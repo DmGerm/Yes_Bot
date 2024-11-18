@@ -23,11 +23,11 @@ namespace DNS_YES_BOT.EventHandlers
                     replyMarkup: new InlineKeyboardMarkup().AddButtons("Выборг Советская", "Тихвин"));
             }
 
-            if (msg.Text == "/addAdmin")
+            if (msg.Text == "/add_admin")
             {
                 if (await _userRepo.UserListIsEmptyAsync())
                 {
-                    await _userRepo.AddUserIdAsync(msg.From.Id);
+                    await _userRepo.AddAdminAsync(msg.From.Id);
                     await _botClient.SendMessage(msg.Chat, "Вы стали первым администратором чата.");
                     return;
                 }

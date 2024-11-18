@@ -11,10 +11,20 @@ namespace DNS_YES_BOT.EventHandlers
         private readonly IUserRepo _userRepo = userRepo;
         public async Task OnUpdate(Update update)
         {
-            if (update is { CallbackQuery: { } query })
+            if (update is { CallbackQuery: { } query } && query.Data is { } message && message.Contains("add_admin")) 
             {
-                await _botClient.AnswerCallbackQuery(query.Id, $"You picked {query.Data}");
-                await _botClient.SendMessage(query.Message!.Chat, $"User {query.From} clicked on {query.Data}");
+                await _botClient.AnswerCallbackQuery(query.Id, $"Вы выбрали {query.Data}");
+                var parts = message.Split('_');
+                long id = long.Parse(parts[2]);
+                
+                if (! await _userRepo.UserIdExistsAsync(id))
+                {
+                    await _userRepo.AddUserIdAsync(id);
+                    await _botClient.SendMessage(query.Message!.Chat, $"Пользователь {query.From} добавил нового администратора {query.Data}");
+                } else
+                {
+                    await _botClient.SendMessage(query.Message!.Chat, $"Пользователь {query.From} пытается добавить администратора {query.Data}, но он уже существует!");
+                }
             }
 
             if (update is { Type: UpdateType.ChatMember, ChatMember.NewChatMember.User.Id: var userId } && userId == _botClient.BotId)

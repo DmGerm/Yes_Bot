@@ -1,4 +1,4 @@
-﻿using DNS_YES_BOT.Service;
+﻿using DNS_YES_BOT.BotService;
 using Microsoft.Extensions.Configuration;
 
 var builder = new ConfigurationBuilder()

@@ -3,7 +3,7 @@ using DNS_YES_BOT.UserService;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace DNS_YES_BOT.Service
+namespace DNS_YES_BOT.BotService
 {
     public class BotService(string botToken)
     {
@@ -15,8 +15,8 @@ namespace DNS_YES_BOT.Service
             using var cts = new CancellationTokenSource();
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
 
-            OnMessageHandler messageHandler = new(bot);
-            OnUpdateHandler onUpdateHandler = new(bot,_userRepo);
+            OnMessageHandler messageHandler = new(bot, _userRepo);
+            OnUpdateHandler onUpdateHandler = new(bot, _userRepo);
 
             var me = await bot.GetMe();
 
@@ -31,7 +31,7 @@ namespace DNS_YES_BOT.Service
             cts.Cancel();
         }
 
-        async Task SetBotCommandsAsync(ITelegramBotClient botClient)
+        private async Task SetBotCommandsAsync(ITelegramBotClient botClient)
         {
             var commands = new[]
             {

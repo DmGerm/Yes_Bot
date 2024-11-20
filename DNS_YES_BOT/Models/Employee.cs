@@ -1,8 +1,9 @@
 ﻿namespace DNS_YES_BOT.Models
 {
-    internal class Employee
+    public class Employee
     {
         public Guid EmployeeId;
+        public Positions EmployeePosistion;
         public string FirstName = string.Empty;
         public string LastName = string.Empty;
     }

@@ -1,6 +1,6 @@
 ﻿namespace DNS_YES_BOT.UserService
 {
-    public interface IUserRepo
+    public interface IAdminRepo
     {
         public Task AddAdminAsync(long userId);
         public Task<bool> UserIdExistsAsync(long userId);

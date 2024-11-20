@@ -5,10 +5,10 @@ using Telegram.Bot.Types.Enums;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    public class OnUpdateHandler(TelegramBotClient telegramBotClient, IUserRepo userRepo)
+    public class OnUpdateHandler(TelegramBotClient telegramBotClient, IAdminRepo userRepo)
     {
         private readonly TelegramBotClient _botClient = telegramBotClient;
-        private readonly IUserRepo _userRepo = userRepo;
+        private readonly IAdminRepo _userRepo = userRepo;
         public async Task OnUpdate(Update update)
         {
             if (update is { CallbackQuery: { } query } && query.Data is { } message && message.Contains("add_admin")) 

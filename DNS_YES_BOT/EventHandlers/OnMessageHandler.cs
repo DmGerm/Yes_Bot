@@ -6,10 +6,10 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    public class OnMessageHandler(TelegramBotClient telegramBotClient, IUserRepo userRepo)
+    public class OnMessageHandler(TelegramBotClient telegramBotClient, IAdminRepo userRepo)
     {
         private readonly TelegramBotClient _botClient = telegramBotClient;
-        private readonly IUserRepo _userRepo = userRepo;
+        private readonly IAdminRepo _userRepo = userRepo;
         public async Task OnMessage(Message msg, UpdateType type)
         {
             if (msg.From == null)

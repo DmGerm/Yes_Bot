@@ -8,15 +8,15 @@ namespace DNS_YES_BOT.BotService
     public class BotService(string botToken)
     {
         private readonly string _botToken = botToken;
-        private readonly IUserRepo _userRepo = new UserRepo();
+        private readonly IAdminRepo _adminRepo = new AdminRepo();
         public async Task BotRun()
         {
 
             using var cts = new CancellationTokenSource();
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
 
-            OnMessageHandler messageHandler = new(bot, _userRepo);
-            OnUpdateHandler onUpdateHandler = new(bot, _userRepo);
+            OnMessageHandler messageHandler = new(bot, _adminRepo);
+            OnUpdateHandler onUpdateHandler = new(bot, _adminRepo);
 
             var me = await bot.GetMe();
 

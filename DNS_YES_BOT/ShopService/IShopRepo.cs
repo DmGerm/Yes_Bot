@@ -1,6 +1,13 @@
-﻿namespace DNS_YES_BOT.ShopService
+﻿using DNS_YES_BOT.Models;
+
+namespace DNS_YES_BOT.ShopService
 {
-    internal interface IShopRepo
+    public interface IShopRepo
     {
+        public Task AddShopAsync(string shopName);
+        public Task<List<Shop>> GetShopsAsync();
+        public Task<List<string>> GetShopNamesAsync();
+        public Task<bool> IsShopExistAsync(string shopName);
+        public Task RemoveShopAsync(string shopName);
     }
 }

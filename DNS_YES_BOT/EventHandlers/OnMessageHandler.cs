@@ -1,21 +1,20 @@
-﻿using DNS_YES_BOT.UserService;
-using Telegram.Bot;
+﻿using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    public class OnMessageHandler(TelegramBotClient telegramBotClient, IAdminRepo userRepo)
+    public class OnMessageHandler(TelegramBotClient telegramBotClient)
     {
         private readonly TelegramBotClient _botClient = telegramBotClient;
-        private readonly IAdminRepo _userRepo = userRepo;
         public async Task OnMessage(Message msg, UpdateType type)
         {
-            if (msg.From == null)
+            if (msg.From is null || msg.Text is null)
             {
                 return;
             }
+            var command = msg.Text.Split('@')[0];
 
             if (msg.Text == "/start")
             {
@@ -23,42 +22,17 @@ namespace DNS_YES_BOT.EventHandlers
                     replyMarkup: new InlineKeyboardMarkup().AddButtons("Выборг Советская", "Тихвин"));
             }
 
-            if (msg.Text == "/add_admin")
+            if (msg.Text == "/admin_service")
             {
-                if (await _userRepo.UserListIsEmptyAsync())
-                {
-                    await _userRepo.AddAdminAsync(msg.From.Id);
-                    await _botClient.SendMessage(msg.Chat, "Вы стали первым администратором чата.");
-                    return;
-                }
-
-                if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
-                {
-                    await _botClient.SendMessage(msg.Chat, "Вы не являетесь администратором!");
-                    return;
-                }
-
-                var administrators = await _botClient.GetChatAdministrators(msg.Chat.Id);
-
-                if (administrators.Length != 0)
-                {
-                    var inlineKeyboard = new InlineKeyboardMarkup(
-                         administrators.Select(admin =>
-                         {
-                             var user = admin.User;
-                             return new InlineKeyboardButton(user?.Username ?? "Unknown User")
-                             {
-                                 CallbackData = $"add_admin_{user?.Id}"
-                             };
-                         }).ToArray());
-
-                    await _botClient.SendMessage(msg.Chat, "Выберите пользователя для добавления в список администраторов:",
-                        replyMarkup: inlineKeyboard);
-                }
-                else
-                {
-                    await _botClient.SendMessage(msg.Chat, "В чате нет администраторов.");
-                }
+                await _botClient.SendMessage(msg.Chat.Id, "hi");
+                await _botClient.SendMessage(msg.Chat.Id,
+                    "Выберите действие:",
+                    replyMarkup: new InlineKeyboardMarkup(
+                    [
+                    [InlineKeyboardButton.WithCallbackData("Добавить администратора", "admin_add")],
+                    [InlineKeyboardButton.WithCallbackData("Добавить магазин", "shop_add")],
+                    [InlineKeyboardButton.WithCallbackData("Добавить сотрудника", "employee_add")]
+                    ]));
 
             }
         }

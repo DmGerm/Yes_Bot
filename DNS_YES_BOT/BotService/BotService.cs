@@ -15,7 +15,7 @@ namespace DNS_YES_BOT.BotService
             using var cts = new CancellationTokenSource();
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
 
-            OnMessageHandler messageHandler = new(bot, _adminRepo);
+            OnMessageHandler messageHandler = new(bot);
             OnUpdateHandler onUpdateHandler = new(bot, _adminRepo);
 
             var me = await bot.GetMe();
@@ -34,13 +34,15 @@ namespace DNS_YES_BOT.BotService
         private async Task SetBotCommandsAsync(ITelegramBotClient botClient)
         {
             if (botClient == null)
+            {
                 throw new ArgumentNullException(nameof(botClient));
+            }
 
             var commands = new List<BotCommand>
                   {
                        new() { Command = "authorize", Description = "Авторизоваться" },
                        new() { Command = "start", Description = "Запустить сбор информации" },
-                       new() { Command = "add_admin", Description = "Добавить администратора" }
+                       new() { Command = "admin_service", Description = "Панель управления" }
                   };
 
             try

@@ -2,6 +2,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
@@ -11,35 +12,119 @@ namespace DNS_YES_BOT.EventHandlers
         private readonly IAdminRepo _userRepo = userRepo;
         public async Task OnUpdate(Update update)
         {
-            if (update is { CallbackQuery: { } query } && query.Data is { } message && message.Contains("add_admin")) 
+            if (update.CallbackQuery is { Data: { } data } query)
             {
-                await _botClient.AnswerCallbackQuery(query.Id, $"Вы выбрали {query.Data}");
-                var parts = message.Split('_');
-                long id = long.Parse(parts[2]);
-                
-                if (! await _userRepo.UserIdExistsAsync(id))
+                await HandleCallbackQuery(query, data);
+            }
+            else if (update.Type == UpdateType.ChatMember && update.ChatMember?.NewChatMember.User.Id == _botClient.BotId)
+            {
+                await HandleChatMemberUpdate(update.ChatMember);
+            }
+        }
+
+        private async Task HandleCallbackQuery(CallbackQuery query, string data)
+        {
+            if (data.StartsWith("add_admin"))
+            {
+                await HandleAddAdminCallback(query, data);
+            }
+            else
+            {
+                switch (data)
                 {
-                    await _userRepo.AddAdminAsync(id);
-                    await _botClient.SendMessage(query.Message!.Chat, $"Пользователь {query.From} добавил нового администратора {id}");
-                } else
-                {
-                    await _botClient.SendMessage(query.Message!.Chat, $"Пользователь {query.From} пытается добавить администратора {id}, но он уже существует!");
+                    case "admin_add":
+                        await HandleAddAdmin(query);
+                        break;
+
+                    case "shop_add":
+                        await _botClient.AnswerCallbackQuery(query.Id, "Функция добавления магазина пока не реализована.");
+                        break;
+
+                    case "employee_add":
+                        await _botClient.AnswerCallbackQuery(query.Id, "Функция добавления сотрудника пока не реализована.");
+                        break;
+
+                    default:
+                        await _botClient.AnswerCallbackQuery(query.Id, "Неизвестное действие.");
+                        break;
                 }
             }
+        }
 
-            if (update is { Type: UpdateType.ChatMember, ChatMember.NewChatMember.User.Id: var userId } && userId == _botClient.BotId)
+        private async Task HandleAddAdminCallback(CallbackQuery query, string data)
+        {
+            await _botClient.AnswerCallbackQuery(query.Id, $"Вы выбрали {data}");
+
+            var parts = data.Split('_');
+            if (parts.Length != 3 || !long.TryParse(parts[2], out var id))
             {
-                var addedByUser = update.ChatMember.From.Id;
+                await _botClient.SendMessage(query.Message!.Chat, "Некорректный формат команды.");
+                return;
+            }
 
-                if (await _userRepo.UserIdExistsAsync(addedByUser))
-                {
-                    await _botClient.LeaveChat(update.ChatMember.Chat.Id);
-                    Console.WriteLine($"Бот покинул группу, добавивший пользователь: {update.ChatMember.From.Username}");
-                }
-                else
-                {
-                    Console.WriteLine($"Бот добавлен в группу авторизованным пользователем: {update.ChatMember.From.Username}");
-                }
+            if (!await _userRepo.UserIdExistsAsync(id))
+            {
+                await _userRepo.AddAdminAsync(id);
+                await _botClient.SendMessage(query.Message!.Chat,
+                    $"Пользователь {query.From.Username} добавил нового администратора с ID {id}.");
+            }
+            else
+            {
+                await _botClient.SendMessage(query.Message!.Chat,
+                    $"Пользователь {query.From.Username} пытается добавить администратора с ID {id}, но он уже существует!");
+            }
+        }
+
+        private async Task HandleChatMemberUpdate(ChatMemberUpdated chatMember)
+        {
+            var addedByUserId = chatMember.From.Id;
+
+            if (!await _userRepo.UserIdExistsAsync(addedByUserId))
+            {
+                Console.WriteLine($"Бот добавлен в группу авторизованным пользователем: {chatMember.From.Username}");
+            }
+            else
+            {
+                await _botClient.LeaveChat(chatMember.Chat.Id);
+                Console.WriteLine($"Бот покинул группу, добавивший пользователь: {chatMember.From.Username}");
+            }
+        }
+
+        private async Task HandleAddAdmin(CallbackQuery query)
+        {
+            if (query.Message == null)
+                throw new ArgumentNullException(nameof(query.Message), "CallbackQuery.Message cannot be null.");
+
+            if (await _userRepo.UserListIsEmptyAsync())
+            {
+                await _userRepo.AddAdminAsync(query.From.Id);
+                await _botClient.SendMessage(query.Message.Chat.Id, "Вы стали первым администратором бота.");
+                return;
+            }
+
+            if (!await _userRepo.UserIdExistsAsync(query.From.Id))
+            {
+                await _botClient.SendMessage(query.Message.Chat.Id, "Вы не являетесь администратором!");
+                return;
+            }
+
+            var administrators = await _botClient.GetChatAdministrators(query.Message.Chat.Id);
+            if (administrators.Length != 0)
+            {
+                var inlineKeyboard = new InlineKeyboardMarkup(
+                    administrators.Select(admin =>
+                    {
+                        var user = admin.User;
+                        return InlineKeyboardButton.WithCallbackData(user?.Username ?? "Unknown User", $"add_admin_{user?.Id}");
+                    }));
+
+                await _botClient.SendMessage(query.Message.Chat.Id,
+                    "Выберите пользователя для добавления в список администраторов:",
+                    replyMarkup: inlineKeyboard);
+            }
+            else
+            {
+                await _botClient.SendMessage(query.Message.Chat.Id, "В чате нет администраторов.");
             }
         }
     }

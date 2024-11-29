@@ -36,7 +36,8 @@ namespace DNS_YES_BOT.EventHandlers
                     InlineKeyboardButton.WithCallbackData("Добавить сотрудника", "employee_add")
                 ],
                 [
-                    InlineKeyboardButton.WithCallbackData("Добавить магазин", "shop_add")
+                    InlineKeyboardButton.WithCallbackData("Добавить магазин", "shop_add"),
+                    InlineKeyboardButton.WithCallbackData("Вывести список магазинов", "shops_show")
                 ]
                ]));
 

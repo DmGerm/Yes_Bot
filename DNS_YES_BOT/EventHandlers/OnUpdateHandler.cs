@@ -12,7 +12,8 @@ namespace DNS_YES_BOT.EventHandlers
         private readonly TelegramBotClient _botClient = telegramBotClient;
         private readonly IAdminRepo _userRepo = userRepo;
         private readonly IShopRepo _shopRepo = shopRepo;
-        private  TelegramBotClient.OnMessageHandler? _onMessageHandler;
+        private TelegramBotClient.OnMessageHandler? _onMessageHandler;
+        private Dictionary<string, Func<CallbackQuery, Task>>? _callbackHandlers;
         public async Task OnUpdate(Update update)
         {
             if (update.CallbackQuery is { Data: { } data } query)
@@ -27,30 +28,24 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task HandleCallbackQuery(CallbackQuery query, string data)
         {
+            _callbackHandlers = new Dictionary<string, Func<CallbackQuery, Task>>
+                 {
+                    { "shop_add", HandleAddShop },
+                    {"admin_add", HandleAddAdmin  },
+                    { "shops_show", query => _botClient.AnswerCallbackQuery(query.Id, "Функция просмотра магазинов пока не реализована.") },
+                    { "employee_add", query => _botClient.AnswerCallbackQuery(query.Id, "Функция добавления сотрудника пока не реализована.") }
+                 };
             if (data.StartsWith("add_admin"))
             {
                 await HandleAddAdminCallback(query, data);
             }
+            else if (_callbackHandlers.ContainsKey(data))
+            {
+                await _callbackHandlers[data](query);
+            }
             else
             {
-                switch (data)
-                {
-                    case "admin_add":
-                        await HandleAddAdmin(query);
-                        break;
-
-                    case "shop_add":
-                        await HandleAddShop(query);
-                        break;
-
-                    case "employee_add":
-                        await _botClient.AnswerCallbackQuery(query.Id, "Функция добавления сотрудника пока не реализована.");
-                        break;
-
-                    default:
-                        await _botClient.AnswerCallbackQuery(query.Id, "Неизвестное действие.");
-                        break;
-                }
+                await _botClient.AnswerCallbackQuery(query.Id, "Неизвестное действие.");
             }
         }
 
@@ -140,29 +135,29 @@ namespace DNS_YES_BOT.EventHandlers
 
             await _botClient.SendMessage(query.Message.Chat.Id, "Введите название магазина:");
 
-                _onMessageHandler  = async (message, UpdateType) =>
+            _onMessageHandler = async (message, UpdateType) =>
+         {
+             if (message.Type == MessageType.Text)
              {
-                 if (message.Type == MessageType.Text)
+                 if (string.IsNullOrWhiteSpace(message.Text))
                  {
-                     if (string.IsNullOrWhiteSpace(message.Text))
-                     {
-                         await _botClient.SendMessage(query.Message.Chat.Id, "Название магазина не может быть пустым. Попробуйте ещё раз.");
-                         return;
-                     }
-
-                     if (await _shopRepo.IsShopExistAsync(message.Text))
-                     {
-                         await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин с названием \"{message.Text}\" уже существует.");
-                     }
-                     else
-                     {
-                         await _shopRepo.AddShopAsync(message.Text);
-                         await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин \"{message.Text}\" успешно добавлен.");
-                         _botClient.OnMessage -= _onMessageHandler;
-                     }
-                     
+                     await _botClient.SendMessage(query.Message.Chat.Id, "Название магазина не может быть пустым. Попробуйте ещё раз.");
+                     return;
                  }
-             };
+
+                 if (await _shopRepo.IsShopExistAsync(message.Text))
+                 {
+                     await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин с названием \"{message.Text}\" уже существует.");
+                 }
+                 else
+                 {
+                     await _shopRepo.AddShopAsync(message.Text);
+                     await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин \"{message.Text}\" успешно добавлен.");
+                     _botClient.OnMessage -= _onMessageHandler;
+                 }
+
+             }
+         };
 
             _botClient.OnMessage += _onMessageHandler;
         }

@@ -2,8 +2,8 @@
 {
     public class Shop
     {
-        public Guid ShopId;
-        public string ShopName = string.Empty;
-        public List<Guid> EmployeesId = [];
+        public Guid ShopId { get; set; }
+        public string ShopName { get; set; } = string.Empty;
+        public List<Guid> EmployeesId { get; set; } = [];
     }
 }

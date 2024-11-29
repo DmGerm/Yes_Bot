@@ -1,4 +1,5 @@
 ﻿using DNS_YES_BOT.EventHandlers;
+using DNS_YES_BOT.ShopService;
 using DNS_YES_BOT.UserService;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -9,6 +10,7 @@ namespace DNS_YES_BOT.BotService
     {
         private readonly string _botToken = botToken;
         private readonly IAdminRepo _adminRepo = new AdminRepo();
+        private readonly IShopRepo _shopRepo = new ShopRepo();  
         public async Task BotRun()
         {
 
@@ -16,7 +18,7 @@ namespace DNS_YES_BOT.BotService
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
 
             OnMessageHandler messageHandler = new(bot);
-            OnUpdateHandler onUpdateHandler = new(bot, _adminRepo);
+            OnUpdateHandler onUpdateHandler = new(bot, _adminRepo, _shopRepo);
 
             var me = await bot.GetMe();
 

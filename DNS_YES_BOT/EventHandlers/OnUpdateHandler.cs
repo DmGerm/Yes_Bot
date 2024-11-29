@@ -1,4 +1,5 @@
-﻿using DNS_YES_BOT.UserService;
+﻿using DNS_YES_BOT.ShopService;
+using DNS_YES_BOT.UserService;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -6,10 +7,12 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    public class OnUpdateHandler(TelegramBotClient telegramBotClient, IAdminRepo userRepo)
+    public class OnUpdateHandler(TelegramBotClient telegramBotClient, IAdminRepo userRepo, IShopRepo shopRepo)
     {
         private readonly TelegramBotClient _botClient = telegramBotClient;
         private readonly IAdminRepo _userRepo = userRepo;
+        private readonly IShopRepo _shopRepo = shopRepo;
+        private  TelegramBotClient.OnMessageHandler? _onMessageHandler;
         public async Task OnUpdate(Update update)
         {
             if (update.CallbackQuery is { Data: { } data } query)
@@ -37,7 +40,7 @@ namespace DNS_YES_BOT.EventHandlers
                         break;
 
                     case "shop_add":
-                        await _botClient.AnswerCallbackQuery(query.Id, "Функция добавления магазина пока не реализована.");
+                        await HandleAddShop(query);
                         break;
 
                     case "employee_add":
@@ -126,6 +129,27 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await _botClient.SendMessage(query.Message.Chat.Id, "В чате нет администраторов.");
             }
+        }
+        private async Task HandleAddShop(CallbackQuery query)
+        {
+            if (query.Message == null)
+            {
+                await _botClient.AnswerCallbackQuery(query.Id, "Ошибка: сообщение не найдено.");
+                return;
+            }
+
+            await _botClient.SendMessage(query.Message.Chat.Id, "Введите название магазина:");
+
+                _onMessageHandler  = async (message, UpdateType) =>
+             {
+                 if (message.Type == MessageType.Text)
+                 {
+                     await _shopRepo.AddShopAsync(message.Text);
+                     _botClient.OnMessage -= _onMessageHandler;
+                 }
+             };
+
+            _botClient.OnMessage += _onMessageHandler;
         }
     }
 }

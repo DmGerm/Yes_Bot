@@ -4,7 +4,6 @@ namespace DNS_YES_BOT.UserService
 {
     public class AdminRepo : IAdminRepo
     {
-        //Добавить репозиторий пользователей, связать пользователей с магазинами по ID магазина
         private readonly HashSet<long> _adminsID = [];
 
         public AdminRepo()

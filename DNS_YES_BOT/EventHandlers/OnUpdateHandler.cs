@@ -144,8 +144,23 @@ namespace DNS_YES_BOT.EventHandlers
              {
                  if (message.Type == MessageType.Text)
                  {
-                     await _shopRepo.AddShopAsync(message.Text);
-                     _botClient.OnMessage -= _onMessageHandler;
+                     if (string.IsNullOrWhiteSpace(message.Text))
+                     {
+                         await _botClient.SendMessage(query.Message.Chat.Id, "Название магазина не может быть пустым. Попробуйте ещё раз.");
+                         return;
+                     }
+
+                     if (await _shopRepo.IsShopExistAsync(message.Text))
+                     {
+                         await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин с названием \"{message.Text}\" уже существует.");
+                     }
+                     else
+                     {
+                         await _shopRepo.AddShopAsync(message.Text);
+                         await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин \"{message.Text}\" успешно добавлен.");
+                         _botClient.OnMessage -= _onMessageHandler;
+                     }
+                     
                  }
              };
 

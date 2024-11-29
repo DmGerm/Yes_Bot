@@ -1,4 +1,7 @@
-﻿namespace DNS_YES_BOT.Models
+﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
+
+namespace DNS_YES_BOT.Models
 {
     public class Shop
     {

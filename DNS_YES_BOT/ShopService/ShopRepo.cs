@@ -1,5 +1,6 @@
 ﻿using DNS_YES_BOT.Models;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DNS_YES_BOT.ShopService
 {
@@ -33,11 +34,19 @@ namespace DNS_YES_BOT.ShopService
 
         private void LoadShopList()
         {
-            if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shops.json")))
+            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shops.json");
+
+            if (File.Exists(filePath))
             {
-                var json = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "userIds.json"));
+                var json = File.ReadAllText(filePath);
+
+                var options = new JsonSerializerOptions
+                {
+                    Converters = { new JsonStringEnumConverter() }
+                };
+
                 _shops.Clear();
-                _shops.AddRange(JsonSerializer.Deserialize<List<Shop>>(json) ?? throw new InvalidOperationException("Invalid json"));
+                _shops.AddRange(JsonSerializer.Deserialize<List<Shop>>(json, options) ?? throw new InvalidOperationException("Invalid json"));
             }
         }
 

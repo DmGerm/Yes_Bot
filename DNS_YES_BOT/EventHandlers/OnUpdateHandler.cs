@@ -32,7 +32,7 @@ namespace DNS_YES_BOT.EventHandlers
                  {
                     { "shop_add", HandleAddShop },
                     {"admin_add", HandleAddAdmin  },
-                    { "shops_show", query => _botClient.AnswerCallbackQuery(query.Id, "Функция просмотра магазинов пока не реализована.") },
+                    { "shop_del", HandleShopDelete },
                     { "employee_add", query => _botClient.AnswerCallbackQuery(query.Id, "Функция добавления сотрудника пока не реализована.") }
                  };
             if (data.StartsWith("add_admin"))
@@ -47,6 +47,40 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await _botClient.AnswerCallbackQuery(query.Id, "Неизвестное действие.");
             }
+        }
+
+        private async Task HandleShopDelete(CallbackQuery query)
+        {
+            if (query.Message == null)
+            {
+                await _botClient.AnswerCallbackQuery(query.Id, "Ошибка: сообщение не найдено.");
+                return;
+            }
+
+            await _botClient.SendMessage(query.Message.Chat.Id, "Введите название магазина:");
+
+            ReplaceOnMessageHandler(async (message, updateType) =>
+            {
+                if (message.Type == MessageType.Text)
+                {
+                    if (string.IsNullOrWhiteSpace(message.Text))
+                    {
+                        await _botClient.SendMessage(query.Message.Chat.Id, "Название магазина не может быть пустым. Попробуйте ещё раз.");
+                        return;
+                    }
+
+                    if (!await _shopRepo.IsShopExistAsync(message.Text))
+                    {
+                        await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин с названием \"{message.Text}\" не существует в базе.");
+                    }
+                    else
+                    {
+                        await _shopRepo.RemoveShopAsync(message.Text);
+                        await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин \"{message.Text}\" успешно удален.");
+                        ReplaceOnMessageHandler(null);
+                    }
+                }
+            });
         }
 
         private async Task HandleAddAdminCallback(CallbackQuery query, string data)
@@ -135,31 +169,46 @@ namespace DNS_YES_BOT.EventHandlers
 
             await _botClient.SendMessage(query.Message.Chat.Id, "Введите название магазина:");
 
-            _onMessageHandler = async (message, UpdateType) =>
-         {
-             if (message.Type == MessageType.Text)
-             {
-                 if (string.IsNullOrWhiteSpace(message.Text))
-                 {
-                     await _botClient.SendMessage(query.Message.Chat.Id, "Название магазина не может быть пустым. Попробуйте ещё раз.");
-                     return;
-                 }
+            ReplaceOnMessageHandler(async (message, updateType) =>
+            {
+                if (message.Type == MessageType.Text)
+                {
+                    if (string.IsNullOrWhiteSpace(message.Text))
+                    {
+                        await _botClient.SendMessage(query.Message.Chat.Id, "Название магазина не может быть пустым. Попробуйте ещё раз.");
+                        return;
+                    }
 
-                 if (await _shopRepo.IsShopExistAsync(message.Text))
-                 {
-                     await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин с названием \"{message.Text}\" уже существует.");
-                 }
-                 else
-                 {
-                     await _shopRepo.AddShopAsync(message.Text);
-                     await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин \"{message.Text}\" успешно добавлен.");
-                     _botClient.OnMessage -= _onMessageHandler;
-                 }
+                    if (await _shopRepo.IsShopExistAsync(message.Text))
+                    {
+                        await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин с названием \"{message.Text}\" уже существует.");
+                    }
+                    else
+                    {
+                        await _shopRepo.AddShopAsync(message.Text);
+                        await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин \"{message.Text}\" успешно добавлен.");
+                        ReplaceOnMessageHandler(null);
+                    }
+                }
+            });
+        }
 
-             }
-         };
+        private void ReplaceOnMessageHandler(TelegramBotClient.OnMessageHandler? newHandler)
+        {
+            if (_onMessageHandler != null)
+            {
+                _botClient.OnMessage -= _onMessageHandler;
+            }
 
-            _botClient.OnMessage += _onMessageHandler;
+            if (newHandler != null)
+            {
+                _onMessageHandler = newHandler;
+                _botClient.OnMessage += _onMessageHandler;
+            }
+            else
+            {
+                _onMessageHandler = null;
+            }
         }
     }
 }

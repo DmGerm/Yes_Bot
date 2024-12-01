@@ -31,8 +31,9 @@ namespace DNS_YES_BOT.EventHandlers
             _callbackHandlers = new Dictionary<string, Func<CallbackQuery, Task>>
                  {
                     { "shop_add", HandleAddShop },
-                    {"admin_add", HandleAddAdmin  },
+                    { "admin_add", HandleAddAdmin  },
                     { "shop_del", HandleShopDelete },
+                    { "shops_show", HandleShopsShow },
                     { "employee_add", query => _botClient.AnswerCallbackQuery(query.Id, "Функция добавления сотрудника пока не реализована.") }
                  };
             if (data.StartsWith("add_admin"))
@@ -47,6 +48,22 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await _botClient.AnswerCallbackQuery(query.Id, "Неизвестное действие.");
             }
+        }
+
+        private async Task HandleShopsShow(CallbackQuery query)
+        {
+            await _botClient.AnswerCallbackQuery(query.Id, "Вы выбрали просмотр магазинов.");
+            var shops = await _shopRepo.GetShopsAsync();
+            var shopNames = shops.Select(shop => shop.ShopName).ToList();
+
+            if (!shopNames.Any())
+            {
+                await _botClient.SendMessage(query.Message.Chat.Id, "Список магазинов пуст.");
+                return;
+            }
+
+            var shopsString = string.Join(", ", shopNames);
+            await _botClient.SendMessage(query.Message.Chat.Id, $"Список магазинов: {shopsString}");
         }
 
         private async Task HandleShopDelete(CallbackQuery query)

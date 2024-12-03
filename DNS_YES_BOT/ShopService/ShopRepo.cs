@@ -29,6 +29,7 @@ namespace DNS_YES_BOT.ShopService
         {
             _shops.Remove(_shops.FirstOrDefault(x => x.ShopName == shopName) ??
                           throw new InvalidOperationException("Shop not found"));
+            SaveShopsList();
             return Task.CompletedTask;
         }
 
@@ -54,6 +55,22 @@ namespace DNS_YES_BOT.ShopService
         {
             var json = JsonSerializer.Serialize(_shops);
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shops.json"), json);
+        }
+
+        public Task<Guid> GetShopIdAsync(string shopName) => Task.FromResult(_shops.FirstOrDefault(x => x.ShopName == shopName)?.ShopId 
+                                                                            ?? throw new InvalidOperationException("Shop not found"));
+
+        public Task AddEmploeyeeToShopAsync(Guid shopId, Employee employee)
+        {
+            var shop = _shops.FirstOrDefault(gu => gu.ShopId == shopId)
+                                                      ?? throw new InvalidOperationException("Shop not found");
+            shop.Employees.Add(employee);
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveEmployeeFromShopAsync(Guid shopId, Guid empoyeeId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

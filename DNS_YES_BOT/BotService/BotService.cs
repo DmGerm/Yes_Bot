@@ -33,12 +33,9 @@ namespace DNS_YES_BOT.BotService
             cts.Cancel();
         }
 
-        private async Task SetBotCommandsAsync(ITelegramBotClient botClient)
+        private static async Task SetBotCommandsAsync(ITelegramBotClient botClient)
         {
-            if (botClient == null)
-            {
-                throw new ArgumentNullException(nameof(botClient));
-            }
+            ArgumentNullException.ThrowIfNull(botClient);
 
             var commands = new List<BotCommand>
                   {

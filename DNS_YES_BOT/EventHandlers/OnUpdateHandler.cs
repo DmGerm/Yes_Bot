@@ -36,6 +36,7 @@ namespace DNS_YES_BOT.EventHandlers
                     { "shops_show", HandleShopsShow },
                     { "employee_add", query => _botClient.AnswerCallbackQuery(query.Id, "Функция добавления сотрудника пока не реализована.") }
                  };
+
             if (data.StartsWith("add_admin"))
             {
                 await HandleAddAdminCallback(query, data);
@@ -52,18 +53,24 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task HandleShopsShow(CallbackQuery query)
         {
+            if (query.Message == null)
+            {
+                await _botClient.AnswerCallbackQuery(query.Id, "Ошибка: сообщение не найдено.");
+                return;
+            }
+
             await _botClient.AnswerCallbackQuery(query.Id, "Вы выбрали просмотр магазинов.");
             var shops = await _shopRepo.GetShopsAsync();
             var shopNames = shops.Select(shop => shop.ShopName).ToList();
 
-            if (!shopNames.Any())
+            if (shopNames.Count == 0)
             {
                 await _botClient.SendMessage(query.Message.Chat.Id, "Список магазинов пуст.");
                 return;
             }
 
-            var shopsString = string.Join(", ", shopNames);
-            await _botClient.SendMessage(query.Message.Chat.Id, $"Список магазинов: {shopsString}");
+            var shopsString = string.Join(",\n", shopNames);
+            await _botClient.SendMessage(query.Message.Chat.Id, $"Список магазинов:\n {shopsString}");
         }
 
         private async Task HandleShopDelete(CallbackQuery query)

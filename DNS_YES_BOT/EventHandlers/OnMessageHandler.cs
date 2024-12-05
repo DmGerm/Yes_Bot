@@ -1,13 +1,15 @@
-﻿using Telegram.Bot;
+﻿using DNS_YES_BOT.ShopService;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    public class OnMessageHandler(TelegramBotClient telegramBotClient)
+    public class OnMessageHandler(TelegramBotClient telegramBotClient, IShopRepo shopRepo)
     {
         private readonly TelegramBotClient _botClient = telegramBotClient;
+        private readonly IShopRepo _shopRepo = shopRepo;
         public async Task OnMessage(Message msg, UpdateType type)
         {
             if (msg.From is null || msg.Text is null)
@@ -18,8 +20,16 @@ namespace DNS_YES_BOT.EventHandlers
 
             if (command == "/start")
             {
-                await _botClient.SendMessage(msg.Chat, "Выберите ваш филиал, чтобы подтвердить прочтение информации!",
-                    replyMarkup: new InlineKeyboardMarkup().AddButtons("Выборг Советская", "Тихвин"));
+                var shops = await _shopRepo.GetShopsAsync();
+                var buttons = shops
+                    .Select(shop => InlineKeyboardButton.WithCallbackData(
+                        shop.ShopName,
+                        $"shop_{shop.ShopId}")) //Todo: Доработать обработку этого запроса
+                          .ToList();
+                await _botClient.SendMessage(
+              msg.Chat.Id,
+              "Нажмите кнопку вашего магазина, чтобы подтвердить ознакомление с информацией:",
+              replyMarkup: new InlineKeyboardMarkup(buttons));
             }
 
             if (command == "/admin_service")

@@ -10,7 +10,5 @@ namespace DNS_YES_BOT.ShopService
         public Task<List<string>> GetShopNamesAsync();
         public Task<bool> IsShopExistAsync(string shopName);
         public Task RemoveShopAsync(string shopName);
-        public Task AddEmploeyeeToShopAsync(Guid shopId, Employee employeeId);
-        public Task RemoveEmployeeFromShopAsync(Guid shopId, Guid empoyeeId);
     }
 }

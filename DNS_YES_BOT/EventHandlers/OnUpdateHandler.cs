@@ -17,7 +17,7 @@ namespace DNS_YES_BOT.EventHandlers
         public async Task OnUpdate(Update update)
         {
             if (update.CallbackQuery is { Data: { } data } query)
-            {
+            {   
                 await HandleCallbackQuery(query, data);
             }
             else if (update.Type == UpdateType.ChatMember && update.ChatMember?.NewChatMember.User.Id == _botClient.BotId)

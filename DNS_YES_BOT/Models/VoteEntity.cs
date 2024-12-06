@@ -3,6 +3,6 @@
     public class VoteEntity
     {
         public DateTime? Date { get; set; } = DateTime.Now;
-        public Dictionary<Guid, string> VoteResults = [];
+        public Dictionary<Guid, string> VoteResults { get; set; } = [];
     }
 }

@@ -2,11 +2,16 @@
 
 namespace DNS_YES_BOT.VoteService
 {
-    internal class VoteService : IVoteService
+    public class VoteService : IVoteService
     {
+        private Dictionary<long, VoteEntity> _votes = [];
         public Task<bool> AddEntity(long chatId, Guid shopId, string userName)
         {
-            throw new NotImplementedException();
+            _votes.Add(chatId, new VoteEntity()
+            {
+                VoteResults = new Dictionary<Guid, string> { { shopId, userName } }
+            });
+            return Task.FromResult(true);
         }
 
         public Task<VoteEntity> GetVoteByShopId()

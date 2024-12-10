@@ -9,5 +9,6 @@ namespace DNS_YES_BOT.VoteService
         public Task<bool> AddEntity(long chatId, Guid shopId, string userName);
         public Task<VoteEntity> GetVoteEntityByChatId (long chatId);
         public Task<bool> RemoveEntity(long chatId);
+        public Task<bool> CheckEntity(long chatId);
     }
 }

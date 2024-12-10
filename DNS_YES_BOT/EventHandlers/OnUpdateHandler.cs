@@ -41,6 +41,10 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await HandleAddAdminCallback(query, data);
             }
+            else if (data.StartsWith("shop_"))
+            {
+                await HandleVoteResult(query, data);
+            }
             else if (_callbackHandlers.ContainsKey(data))
             {
                 await _callbackHandlers[data](query);
@@ -49,6 +53,12 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await _botClient.AnswerCallbackQuery(query.Id, "Неизвестное действие.");
             }
+        }
+
+        private async Task HandleVoteResult(CallbackQuery query, string data)
+        {
+            var shopId = data.Split('_')[1];
+            
         }
 
         private async Task HandleShopsShow(CallbackQuery query)

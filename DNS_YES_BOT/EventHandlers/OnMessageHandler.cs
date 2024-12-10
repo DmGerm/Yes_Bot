@@ -20,6 +20,7 @@ namespace DNS_YES_BOT.EventHandlers
 
             if (command == "/start")
             {
+                //ToDo: Добавить проверку, запускалось ли такое голосование или нет, если да, то предупредить, что результаты будут обновлены
                 var shops = await _shopRepo.GetShopsAsync();
                 var buttons = shops
                     .Select(shop => InlineKeyboardButton.WithCallbackData(

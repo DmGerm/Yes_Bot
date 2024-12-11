@@ -1,4 +1,5 @@
 ﻿using DNS_YES_BOT.ShopService;
+using DNS_YES_BOT.VoteService;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -6,10 +7,11 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    public class OnMessageHandler(TelegramBotClient telegramBotClient, IShopRepo shopRepo)
+    public class OnMessageHandler(TelegramBotClient telegramBotClient, IShopRepo shopRepo, IVoteService voteService)
     {
         private readonly TelegramBotClient _botClient = telegramBotClient;
         private readonly IShopRepo _shopRepo = shopRepo;
+        private readonly IVoteService _voteService = voteService;
         public async Task OnMessage(Message msg, UpdateType type)
         {
             if (msg.From is null || msg.Text is null)
@@ -20,12 +22,16 @@ namespace DNS_YES_BOT.EventHandlers
 
             if (command == "/start")
             {
-                //ToDo: Добавить проверку, запускалось ли такое голосование или нет, если да, то предупредить, что результаты будут обновлены
+                if (await _voteService.CheckEntity(msg.Chat.Id))
+                {
+                    await _botClient.SendMessage(msg.Chat.Id, "Голосование в этом чате уже было проведено");
+                    return;
+                }
                 var shops = await _shopRepo.GetShopsAsync();
                 var buttons = shops
                     .Select(shop => InlineKeyboardButton.WithCallbackData(
                         shop.ShopName,
-                        $"shop_{shop.ShopId}")) //Todo: Доработать обработку этого запроса
+                        $"shop_{shop.ShopId}")) 
                           .ToList();
                 await _botClient.SendMessage(
               msg.Chat.Id,

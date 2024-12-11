@@ -1,5 +1,6 @@
 ﻿using DNS_YES_BOT.ShopService;
 using DNS_YES_BOT.UserService;
+using DNS_YES_BOT.VoteService;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -7,11 +8,12 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    public class OnUpdateHandler(TelegramBotClient telegramBotClient, IAdminRepo userRepo, IShopRepo shopRepo)
+    public class OnUpdateHandler(TelegramBotClient telegramBotClient, IAdminRepo userRepo, IShopRepo shopRepo, IVoteService voteService)
     {
         private readonly TelegramBotClient _botClient = telegramBotClient;
         private readonly IAdminRepo _userRepo = userRepo;
         private readonly IShopRepo _shopRepo = shopRepo;
+        private readonly IVoteService _voteService;
         private TelegramBotClient.OnMessageHandler? _onMessageHandler;
         private Dictionary<string, Func<CallbackQuery, Task>>? _callbackHandlers;
         public async Task OnUpdate(Update update)
@@ -58,7 +60,7 @@ namespace DNS_YES_BOT.EventHandlers
         private async Task HandleVoteResult(CallbackQuery query, string data)
         {
             var shopId = data.Split('_')[1];
-            
+            _voteService.AddEntity(query.Message.Chat.Id, )
         }
 
         private async Task HandleShopsShow(CallbackQuery query)

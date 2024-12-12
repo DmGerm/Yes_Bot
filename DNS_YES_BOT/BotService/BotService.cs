@@ -1,6 +1,7 @@
 ﻿using DNS_YES_BOT.EventHandlers;
 using DNS_YES_BOT.ShopService;
 using DNS_YES_BOT.UserService;
+using DNS_YES_BOT.VoteService;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -10,15 +11,16 @@ namespace DNS_YES_BOT.BotService
     {
         private readonly string _botToken = botToken;
         private readonly IAdminRepo _adminRepo = new AdminRepo();
-        private readonly IShopRepo _shopRepo = new ShopRepo();  
+        private readonly IShopRepo _shopRepo = new ShopRepo();
+        private readonly IVoteService _voteService = new VoteServiceRe();
         public async Task BotRun()
         {
 
             using var cts = new CancellationTokenSource();
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
 
-            OnMessageHandler messageHandler = new(bot, _shopRepo);
-            OnUpdateHandler onUpdateHandler = new(bot, _adminRepo, _shopRepo);
+            OnMessageHandler messageHandler = new(bot, _shopRepo, _voteService);
+            OnUpdateHandler onUpdateHandler = new(bot, _adminRepo, _shopRepo, _voteService);
 
             var me = await bot.GetMe();
 
@@ -28,7 +30,7 @@ namespace DNS_YES_BOT.BotService
 
             await SetBotCommandsAsync(bot);
 
-            Console.WriteLine($"@{me.Username} is running... Press Enter to terminate");
+            Console.WriteLine($"@{me.Username} Урок 9. Лекция Безопасная разработка приложенийis running... Press Enter to terminate");
             Console.ReadLine();
             cts.Cancel();
         }

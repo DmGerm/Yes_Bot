@@ -2,19 +2,23 @@
 
 namespace DNS_YES_BOT.VoteService
 {
-    public class VoteService : IVoteService
+    public class VoteServiceRe : IVoteService
+        //Todo: реализовать функцию сохранения
     {
         private Dictionary<long, VoteEntity> _votes = [];
          public Task<bool> AddEntity(long chatId, Guid shopId, string userName)
         {
             if (_votes.ContainsKey(chatId))
             {
-                //Продолжить добавление значений через отдельный метод в классе VoteEntity
-            }    
-            _votes.Add(chatId, new VoteEntity()
+                _votes[chatId].AddResult(shopId, userName);
+            }
+            else
             {
-                VoteResults = []
-            });
+                _votes.Add(chatId, new VoteEntity()
+                {
+                    VoteResults = []
+                });
+            }
             return Task.FromResult(true);
         }
 

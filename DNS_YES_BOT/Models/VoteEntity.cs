@@ -8,10 +8,12 @@
         {
             if (!VoteResults.ContainsKey(guid))
             {
-                VoteResults.Add(guid, [ value ]);
+                VoteResults.Add(guid, [value]);
             }
-
-            VoteResults[guid].Add(value);
+            else
+            {
+                VoteResults[guid].Add(value);
+            }
         }
     }
 }

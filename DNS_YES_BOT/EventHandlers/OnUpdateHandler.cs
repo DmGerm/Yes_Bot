@@ -13,7 +13,7 @@ namespace DNS_YES_BOT.EventHandlers
         private readonly TelegramBotClient _botClient = telegramBotClient;
         private readonly IAdminRepo _userRepo = userRepo;
         private readonly IShopRepo _shopRepo = shopRepo;
-        private readonly IVoteService _voteService;
+        private readonly IVoteService _voteService = voteService;
         private TelegramBotClient.OnMessageHandler? _onMessageHandler;
         private Dictionary<string, Func<CallbackQuery, Task>>? _callbackHandlers;
         public async Task OnUpdate(Update update)
@@ -59,8 +59,14 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task HandleVoteResult(CallbackQuery query, string data)
         {
-            var shopId = data.Split('_')[1];
-            _voteService.AddEntity(query.Message.Chat.Id, )
+            if(!Guid.TryParse(data.Split('_')[1], out Guid shopId))
+                throw new Exception("Invalid shop id");
+
+            if(query.Message is null)
+                throw new Exception("Message is null");
+            await _voteService.AddEntity(query.Message.Chat.Id, shopId, String.Concat(query.From.FirstName, " ", query.From.LastName));
+            await _botClient.AnswerCallbackQuery(query.Id, "Голос зачтен");
+
         }
 
         private async Task HandleShopsShow(CallbackQuery query)

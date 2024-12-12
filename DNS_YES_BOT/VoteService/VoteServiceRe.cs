@@ -1,4 +1,5 @@
 ﻿using DNS_YES_BOT.Models;
+using System.Text.Json;
 
 namespace DNS_YES_BOT.VoteService
 {
@@ -19,6 +20,7 @@ namespace DNS_YES_BOT.VoteService
                     VoteResults = []
                 });
             }
+            SaveVotesResult();
             return Task.FromResult(true);
         }
 
@@ -32,5 +34,11 @@ namespace DNS_YES_BOT.VoteService
         public Task<VoteEntity> GetVoteEntityByChatId(long chatId) => Task.FromResult(_votes[chatId]);
 
         public Task<bool> RemoveEntity(long chatId) => Task.FromResult(_votes.Remove(chatId));
+
+        private void SaveVotesResult()
+        {
+            var json = JsonSerializer.Serialize(_votes);
+            File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "votes.json"), json);
+        }
     }
 }

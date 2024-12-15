@@ -43,7 +43,7 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await HandleAddAdminCallback(query, data);
             }
-            else if (data.StartsWith("shop_"))
+            else if (data.StartsWith("vote_"))
             {
                 await HandleVoteResult(query, data);
             }

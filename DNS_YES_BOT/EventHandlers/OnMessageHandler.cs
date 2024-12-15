@@ -1,5 +1,6 @@
 ﻿using DNS_YES_BOT.ShopService;
 using DNS_YES_BOT.VoteService;
+using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -31,7 +32,7 @@ namespace DNS_YES_BOT.EventHandlers
                 var buttons = shops
                     .Select(shop => InlineKeyboardButton.WithCallbackData(
                         shop.ShopName,
-                        $"shop_{shop.ShopId}")) 
+                        $"vote_{shop.ShopId}"))
                           .ToList();
                 await _botClient.SendMessage(
               msg.Chat.Id,
@@ -39,9 +40,18 @@ namespace DNS_YES_BOT.EventHandlers
               replyMarkup: new InlineKeyboardMarkup(buttons));
             }
 
+            if (command == "/showResults")
+            {
+                var results = await _voteService.GetResultsAsync(msg.Chat.Id);
+                var resultMessage = string.Join("\n\n",
+                                           results.VoteResults.Select(item =>
+                                           $"{_shopRepo.GetShopNameById(item.Key)}: {string.Join(", ", item.Value)}"));
+            
+                await _botClient.SendMessage(msg.From.Id, resultMessage);
+            }
+
             if (command == "/admin_service")
             {
-                await _botClient.SendMessage(msg.Chat.Id, "hi");
                 await _botClient.SendMessage(
                msg.Chat.Id,
                "Выберите действие:",

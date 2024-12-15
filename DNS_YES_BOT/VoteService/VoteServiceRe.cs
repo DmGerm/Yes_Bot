@@ -1,13 +1,19 @@
 ﻿using DNS_YES_BOT.Models;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DNS_YES_BOT.VoteService
 {
     public class VoteServiceRe : IVoteService
-        //Todo: реализовать функцию сохранения
     {
         private Dictionary<long, VoteEntity> _votes = [];
-         public Task<bool> AddEntity(long chatId, Guid shopId, string userName)
+
+        public VoteServiceRe()
+        {
+            LoadVotesDict();
+        }
+
+        public Task<bool> AddEntity(long chatId, Guid shopId, string userName)
         {
             if (_votes.ContainsKey(chatId))
             {
@@ -26,10 +32,7 @@ namespace DNS_YES_BOT.VoteService
 
         public Task<bool> CheckEntity(long chatId) => Task.FromResult(_votes.ContainsKey(chatId));
 
-        public Task<VoteEntity> GetVoteByShopId()
-        {
-            throw new NotImplementedException();
-        }
+        public Task<VoteEntity> GetResultsAsync(long id) => Task.FromResult(_votes[id]);
 
         public Task<VoteEntity> GetVoteEntityByChatId(long chatId) => Task.FromResult(_votes[chatId]);
 
@@ -39,6 +42,24 @@ namespace DNS_YES_BOT.VoteService
         {
             var json = JsonSerializer.Serialize(_votes);
             File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "votes.json"), json);
+        }
+        private void LoadVotesDict()
+        {
+            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "votes.json");
+
+            if (File.Exists(filePath))
+            {
+                var json = File.ReadAllText(filePath);
+
+                var options = new JsonSerializerOptions
+                {
+                    Converters = { new JsonStringEnumConverter() }
+                };
+
+                _votes.Clear();
+                _votes = JsonSerializer.Deserialize<Dictionary<long, VoteEntity>>(json, options) 
+                                          ?? throw new InvalidOperationException("Invalid json");
+            }
         }
     }
 }

@@ -47,7 +47,7 @@ namespace DNS_YES_BOT.EventHandlers
                                            results.VoteResults.Select(item =>
                                            $"{_shopRepo.GetShopNameById(item.Key)}: {string.Join(", ", item.Value)}"));
             
-                await _botClient.SendMessage(msg.From.Id, resultMessage);
+                await _botClient.SendMessage(msg.Chat.Id, resultMessage);
             }
 
             if (command == "/admin_service")

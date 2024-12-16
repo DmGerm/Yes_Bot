@@ -32,7 +32,7 @@ namespace DNS_YES_BOT.EventHandlers
                 var buttons = shops
                     .Select(shop => InlineKeyboardButton.WithCallbackData(
                         shop.ShopName,
-                        $"vote_{shop.ShopId}"))
+                        $"vote_{shop.ShopName}"))
                           .ToList();
                 await _botClient.SendMessage(
               msg.Chat.Id,
@@ -45,7 +45,7 @@ namespace DNS_YES_BOT.EventHandlers
                 var results = await _voteService.GetResultsAsync(msg.Chat.Id);
                 var resultMessage = string.Join("\n\n",
                                            results.VoteResults.Select(item =>
-                                           $"{_shopRepo.GetShopNameById(item.Key)}: {string.Join(", ", item.Value)}"));
+                                           $"{item.Key}: {string.Join(", ", item.Value)}"));
             
                 await _botClient.SendMessage(msg.Chat.Id, resultMessage);
             }

@@ -1,4 +1,4 @@
-﻿using DNS_YES_BOT.Models;
+﻿using Interface.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Interface.Controllers

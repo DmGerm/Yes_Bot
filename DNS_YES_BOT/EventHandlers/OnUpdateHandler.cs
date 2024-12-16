@@ -59,12 +59,12 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task HandleVoteResult(CallbackQuery query, string data)
         {
-            if(!Guid.TryParse(data.Split('_')[1], out Guid shopId))
-                throw new Exception("Invalid shop id");
+            data.Split('_');
+            var shopName = data.Split('_')[1];
 
             if(query.Message is null)
                 throw new Exception("Message is null");
-            await _voteService.AddEntity(query.Message.Chat.Id, shopId, String.Concat(query.From.FirstName, " ", query.From.LastName));
+            await _voteService.AddEntity(query.Message.Chat.Id, shopName, String.Concat(query.From.FirstName, " ", query.From.LastName));
             await _botClient.AnswerCallbackQuery(query.Id, "Голос зачтен");
 
         }

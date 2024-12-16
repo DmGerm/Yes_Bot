@@ -1,4 +1,4 @@
-﻿namespace DNS_YES_BOT.Models
+﻿namespace Interface.Models
 {
     public class VoteEntity
     {

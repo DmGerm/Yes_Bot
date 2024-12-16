@@ -13,11 +13,11 @@ namespace DNS_YES_BOT.VoteService
             LoadVotesDict();
         }
 
-        public Task<bool> AddEntity(long chatId, Guid shopId, string userName)
+        public Task<bool> AddEntity(long chatId, string shopName, string userName)
         {
             if (_votes.ContainsKey(chatId))
             {
-                _votes[chatId].AddResult(shopId, userName);
+                _votes[chatId].AddResult(shopName, userName);
             }
             else
             {

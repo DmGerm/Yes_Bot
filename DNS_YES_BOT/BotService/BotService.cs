@@ -19,7 +19,7 @@ namespace DNS_YES_BOT.BotService
             using var cts = new CancellationTokenSource();
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
 
-            OnMessageHandler messageHandler = new(bot, _shopRepo, _voteService);
+            OnMessageHandler messageHandler = new(bot, _shopRepo, _voteService, _adminRepo);
             OnUpdateHandler onUpdateHandler = new(bot, _adminRepo, _shopRepo, _voteService);
 
             var me = await bot.GetMe();
@@ -30,7 +30,7 @@ namespace DNS_YES_BOT.BotService
 
             await SetBotCommandsAsync(bot);
 
-            Console.WriteLine($"@{me.Username} Урок 9. Лекция Безопасная разработка приложенийis running... Press Enter to terminate");
+            Console.WriteLine($"@{me.Username} Запущен... Нажмите Enter для остановки бота.");
             Console.ReadLine();
             cts.Cancel();
         }
@@ -39,16 +39,30 @@ namespace DNS_YES_BOT.BotService
         {
             ArgumentNullException.ThrowIfNull(botClient);
 
-            var commands = new List<BotCommand>
+            var privateCommands = new List<BotCommand>
                   {
-                       new() { Command = "authorize", Description = "Авторизоваться" },
-                       new() { Command = "start", Description = "Запустить сбор информации" },
-                       new() { Command = "admin_service", Description = "Панель управления" }
+                 new() { Command = "admin_service", Description = "Начать работу с ботом" },
+                 new() { Command = "help", Description = "Получить помощь" },
+                  };
+
+            var groupCommands = new List<BotCommand>
+                  {
+                      new() { Command = "start", Description = "Начать голосование" },
+                      new() { Command = "results", Description = "Посмотреть результаты голосования" },
+                      new() { Command = "add_admin", Description = "Добавить администратора" }
                   };
 
             try
             {
-                await botClient.SetMyCommands(commands);
+                await botClient.SetMyCommands(
+                    privateCommands,
+                    new BotCommandScopeAllPrivateChats()
+                );
+
+                await botClient.SetMyCommands(
+                    groupCommands,
+                    new BotCommandScopeAllGroupChats()
+                );
             }
             catch (Exception ex)
             {

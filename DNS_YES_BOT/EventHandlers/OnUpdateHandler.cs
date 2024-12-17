@@ -33,7 +33,6 @@ namespace DNS_YES_BOT.EventHandlers
             _callbackHandlers = new Dictionary<string, Func<CallbackQuery, Task>>
                  {
                     { "shop_add", HandleAddShop },
-                    { "admin_add", HandleAddAdmin  },
                     { "shop_del", HandleShopDelete },
                     { "shops_show", HandleShopsShow },
                     { "employee_add", query => _botClient.AnswerCallbackQuery(query.Id, "Функция добавления сотрудника пока не реализована.") }
@@ -164,43 +163,7 @@ namespace DNS_YES_BOT.EventHandlers
             }
         }
 
-        private async Task HandleAddAdmin(CallbackQuery query)
-        {
-            if (query.Message == null)
-                throw new ArgumentNullException(nameof(query.Message), "CallbackQuery.Message cannot be null.");
 
-            if (await _userRepo.UserListIsEmptyAsync())
-            {
-                await _userRepo.AddAdminAsync(query.From.Id);
-                await _botClient.SendMessage(query.Message.Chat.Id, "Вы стали первым администратором бота.");
-                return;
-            }
-
-            if (!await _userRepo.UserIdExistsAsync(query.From.Id))
-            {
-                await _botClient.SendMessage(query.Message.Chat.Id, "Вы не являетесь администратором!");
-                return;
-            }
-
-            var administrators = await _botClient.GetChatAdministrators(query.Message.Chat.Id);
-            if (administrators.Length != 0)
-            {
-                var inlineKeyboard = new InlineKeyboardMarkup(
-                    administrators.Select(admin =>
-                    {
-                        var user = admin.User;
-                        return InlineKeyboardButton.WithCallbackData(user?.Username ?? "Unknown User", $"add_admin_{user?.Id}");
-                    }));
-
-                await _botClient.SendMessage(query.Message.Chat.Id,
-                    "Выберите пользователя для добавления в список администраторов:",
-                    replyMarkup: inlineKeyboard);
-            }
-            else
-            {
-                await _botClient.SendMessage(query.Message.Chat.Id, "В чате нет администраторов.");
-            }
-        }
         private async Task HandleAddShop(CallbackQuery query)
         {
             if (query.Message == null)

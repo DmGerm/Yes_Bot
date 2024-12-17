@@ -60,7 +60,7 @@ namespace DNS_YES_BOT.ShopService
         public Task<Guid> GetShopIdAsync(string shopName) => Task.FromResult(_shops.FirstOrDefault(x => x.ShopName == shopName)?.ShopId 
                                                                             ?? throw new InvalidOperationException("Shop not found"));
 
-        public object GetShopNameById(Guid key) => _shops.FirstOrDefault(x => x.ShopId == key).ShopName 
+        public object GetShopNameById(Guid key) => _shops.FirstOrDefault(x => x.ShopId == key)?.ShopName 
                                                    ?? throw new InvalidOperationException("Shop not found");
     }
 }

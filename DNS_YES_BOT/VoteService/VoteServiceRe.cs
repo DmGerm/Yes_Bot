@@ -23,7 +23,10 @@ namespace DNS_YES_BOT.VoteService
             {
                 _votes.Add(chatId, new VoteEntity()
                 {
-                    VoteResults = []
+                    VoteResults = new Dictionary<string, List<string>>
+                        {
+                             { shopName, new List<string> { userName } }
+                        }
                 });
             }
             SaveVotesResult();

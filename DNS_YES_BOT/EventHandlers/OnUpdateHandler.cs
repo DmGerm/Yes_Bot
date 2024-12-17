@@ -4,7 +4,6 @@ using DNS_YES_BOT.VoteService;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
@@ -19,7 +18,7 @@ namespace DNS_YES_BOT.EventHandlers
         public async Task OnUpdate(Update update)
         {
             if (update.CallbackQuery is { Data: { } data } query)
-            {   
+            {
                 await HandleCallbackQuery(query, data);
             }
             else if (update.Type == UpdateType.ChatMember && update.ChatMember?.NewChatMember.User.Id == _botClient.BotId)
@@ -61,7 +60,7 @@ namespace DNS_YES_BOT.EventHandlers
             data.Split('_');
             var shopName = data.Split('_')[1];
 
-            if(query.Message is null)
+            if (query.Message is null)
                 throw new Exception("Message is null");
             await _voteService.AddEntity(query.Message.Chat.Id, shopName, String.Concat(query.From.FirstName, " ", query.From.LastName));
             await _botClient.AnswerCallbackQuery(query.Id, "Голос зачтен");
@@ -87,7 +86,7 @@ namespace DNS_YES_BOT.EventHandlers
             }
 
             var shopsString = string.Join(",\n", shopNames);
-            await _botClient.SendMessage(query.Message.Chat.Id, $"Список магазинов:\n {shopsString}");
+            await _botClient.SendMessage(query.Message.Chat.Id, $"Список магазинов:\n{shopsString}");
         }
 
         private async Task HandleShopDelete(CallbackQuery query)

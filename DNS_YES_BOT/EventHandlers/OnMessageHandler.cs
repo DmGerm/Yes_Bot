@@ -45,6 +45,15 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task<Message> ShowAdminPanel(Message msg)
         {
+            if (msg.From is null)
+                throw new ArgumentNullException(nameof(msg), "Message.From cannot be null.");
+
+            if (msg.Chat.Type != ChatType.Private)
+               await _botClient.SendMessage(msg.Chat.Id, "Данная команда доступна только в личных чатах.");
+
+            if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
+                return await _botClient.SendMessage(msg.Chat.Id, "Вы не являетесь администратором!");
+
             return await _botClient.SendMessage(
                            msg.Chat.Id,
                            "Выберите действие:",

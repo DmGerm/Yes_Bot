@@ -57,14 +57,14 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task HandleVoteResult(CallbackQuery query, string data)
         {
+            if (query.Message is null || query.Message.From is null)
+                throw new Exception("Message or From is null");
+
             data.Split('_');
             var shopName = data.Split('_')[1];
 
-            if (query.Message is null)
-                throw new Exception("Message is null");
             await _voteService.AddEntity(query.Message.Chat.Id, shopName, String.Concat(query.From.FirstName, " ", query.From.LastName));
             await _botClient.AnswerCallbackQuery(query.Id, "Голос зачтен");
-
         }
 
         private async Task HandleShopsShow(CallbackQuery query)

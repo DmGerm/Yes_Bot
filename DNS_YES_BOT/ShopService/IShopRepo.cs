@@ -11,5 +11,6 @@ namespace DNS_YES_BOT.ShopService
         public Task<bool> IsShopExistAsync(string shopName);
         public Task RemoveShopAsync(string shopName);
         object GetShopNameById(Guid key);
+        public Task<int> GetShopsCountAsync();
     }
 }

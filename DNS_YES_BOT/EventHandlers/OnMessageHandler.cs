@@ -49,7 +49,7 @@ namespace DNS_YES_BOT.EventHandlers
                 throw new ArgumentNullException(nameof(msg), "Message.From cannot be null.");
 
             if (msg.Chat.Type != ChatType.Private)
-               await _botClient.SendMessage(msg.Chat.Id, "Данная команда доступна только в личных чатах.");
+                await _botClient.SendMessage(msg.Chat.Id, "Данная команда доступна только в личных чатах.");
 
             if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
                 return await _botClient.SendMessage(msg.Chat.Id, "Вы не являетесь администратором!");
@@ -91,12 +91,30 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task ShowVoteResults(Message msg)
         {
+            if (msg is null || msg.From is null)
+                throw new Exception("Message or From is null");
+
+            if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
+            {
+                await _botClient.SendMessage(msg.Chat.Id, "Вы не являетесь администратором!");
+                return;
+            }
+
             var results = await _voteService.GetResultsAsync(msg.Chat.Id);
             var resultMessage = string.Join("\n\n",
                                        results.VoteResults.Select(item =>
                                        $"{item.Key}: {string.Join(", ", item.Value)}"));
+            try
+            {
+                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:/nВсего магазинов проговлено: {results.VoteResults.Count}" +
+                    $"/nМагазинов не проголосовало: {_shopRepo.GetShopsCountAsync().Result - results.VoteResults.Count}");
 
-            await _botClient.SendMessage(msg.Chat.Id, resultMessage);
+               await _botClient.SendMessage(msg.From.Id, resultMessage);
+            }
+            catch (Exception)
+            {
+                await _botClient.SendMessage(msg.Chat.Id, "Для просмотра результатов начните отдельный чат с ботом!");
+            }
         }
 
         private async Task HandleAddAdmin(Message message)

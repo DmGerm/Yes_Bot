@@ -35,7 +35,7 @@ namespace DNS_YES_BOT.ShopService
 
         private void LoadShopList()
         {
-            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shops.json");
+            var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data/shops.json");
 
             if (File.Exists(filePath))
             {
@@ -54,7 +54,14 @@ namespace DNS_YES_BOT.ShopService
         private void SaveShopsList()
         {
             var json = JsonSerializer.Serialize(_shops);
-            File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "shops.json"), json);
+            var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
+
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            File.WriteAllText(directory, json);
         }
 
         public Task<Guid> GetShopIdAsync(string shopName) => Task.FromResult(_shops.FirstOrDefault(x => x.ShopName == shopName)?.ShopId 

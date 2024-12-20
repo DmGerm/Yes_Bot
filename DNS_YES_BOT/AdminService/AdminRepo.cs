@@ -32,9 +32,9 @@ namespace DNS_YES_BOT.UserService
 
         private void LoadUserIds()
         {
-            if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "userIds.json")))
+            if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data/userIds.json")))
             {
-                var json = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "userIds.json"));
+                var json = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data/userIds.json"));
                 _adminsID.Clear();
                 _adminsID.UnionWith(JsonSerializer.Deserialize<HashSet<long>>(json) ?? []);
             }
@@ -43,7 +43,13 @@ namespace DNS_YES_BOT.UserService
         private void SaveUserIds()
         {
             var json = JsonSerializer.Serialize(_adminsID);
-            File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "userIds.json"), json);
+            var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
+
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            File.WriteAllText(directory, json);
         }
     }
 }

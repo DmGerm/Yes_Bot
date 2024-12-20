@@ -37,7 +37,16 @@ namespace DNS_YES_BOT.VoteService
 
         public Task<VoteEntity> GetResultsAsync(long id) => Task.FromResult(_votes[id]);
 
-        public Task<VoteEntity> GetVoteEntityByChatId(long chatId) => Task.FromResult(_votes[chatId]);
+        public Task<VoteEntity?> GetVoteEntityByChatId(long chatId)
+        {
+            if (_votes.TryGetValue(chatId, out var result))
+            {
+                return Task.FromResult<VoteEntity?>(result);
+            }
+
+            Console.WriteLine($"Vote with chat ID {chatId} not found.");
+            return Task.FromResult<VoteEntity?>(null);
+        }
 
         public Task<bool> RemoveEntity(long chatId) => Task.FromResult(_votes.Remove(chatId));
 

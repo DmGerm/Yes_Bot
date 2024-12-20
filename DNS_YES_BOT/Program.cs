@@ -1,12 +1,20 @@
 ﻿using DNS_YES_BOT.BotService;
 using Microsoft.Extensions.Configuration;
 
-var builder = new ConfigurationBuilder()
+internal class Program
+{
+    private static async Task Main(string[] args)
+    {
+        var builder = new ConfigurationBuilder()
                     .SetBasePath(AppContext.BaseDirectory)
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-IConfiguration configuration = builder.Build();
-var botToken = configuration["Telegram:BotToken"] ?? "";
+        IConfiguration configuration = builder.Build();
 
-BotService botService = new(botToken);
-await botService.BotRun();
+        var botToken = Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN")
+                      ?? configuration["Telegram:BotToken"]
+                      ?? throw new InvalidOperationException("Bot token is not provided!");
 
+        BotService botService = new(botToken);
+        await botService.BotRun();
+    }
+}

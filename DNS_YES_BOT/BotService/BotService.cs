@@ -2,6 +2,7 @@
 using DNS_YES_BOT.ShopService;
 using DNS_YES_BOT.UserService;
 using DNS_YES_BOT.VoteService;
+using System.Runtime.Loader;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -13,11 +14,26 @@ namespace DNS_YES_BOT.BotService
         private readonly IAdminRepo _adminRepo = new AdminRepo();
         private readonly IShopRepo _shopRepo = new ShopRepo();
         private readonly IVoteService _voteService = new VoteServiceRe();
+        private bool _isDisposed = false;
         public async Task BotRun()
         {
 
             using var cts = new CancellationTokenSource();
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
+
+            AssemblyLoadContext.Default.Unloading += ctx =>
+             {
+                 Console.WriteLine("Получен сигнал завершения.");
+                 if (!_isDisposed)
+                     cts.Cancel();
+             };
+
+            Console.CancelKeyPress += (_, e) =>
+            {
+                Console.WriteLine("Завершение работы...");
+                e.Cancel = true;
+                cts.Cancel();
+            };
 
             OnMessageHandler messageHandler = new(bot, _shopRepo, _voteService, _adminRepo);
             OnUpdateHandler onUpdateHandler = new(bot, _adminRepo, _shopRepo, _voteService);
@@ -27,13 +43,47 @@ namespace DNS_YES_BOT.BotService
             bot.OnError += OnErrorHandler.OnError;
             bot.OnMessage += messageHandler.OnMessage;
             bot.OnUpdate += onUpdateHandler.OnUpdate;
+            
+            Console.WriteLine($"@{me.Username} Запущен... ");
 
-            await SetBotCommandsAsync(bot);
+            try
+            {
+                await SetBotCommandsAsync(bot);
 
-            Console.WriteLine($"@{me.Username} Запущен... Нажмите Enter для остановки бота.");
-            Console.ReadLine();
-            cts.Cancel();
+                if (OperatingSystem.IsWindows())
+                {
+                    Console.WriteLine("Нажмите Enter для завершения работы...");
+                    Console.ReadLine();
+                    cts.Cancel();
+                }
+                else
+                {
+                    Console.WriteLine("Ожидаем завершения через Ctrl+C...");
+                    AssemblyLoadContext.Default.Unloading += _ => cts.Cancel();
+                    Console.CancelKeyPress += (_, e) =>
+                    {
+                        e.Cancel = true; 
+                        cts.Cancel();
+                    };
+                    await Task.Delay(Timeout.Infinite, cts.Token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Операция отменена.");
+            }
+            finally
+            {
+                Console.WriteLine("Завершаем работу...");
+                bot.OnMessage -= messageHandler.OnMessage;
+                bot.OnUpdate -= onUpdateHandler.OnUpdate;
+
+                cts.Dispose();
+                _isDisposed = true;
+                Console.WriteLine("Бот успешно остановлен.");
+            }
         }
+
 
         private static async Task SetBotCommandsAsync(ITelegramBotClient botClient)
         {

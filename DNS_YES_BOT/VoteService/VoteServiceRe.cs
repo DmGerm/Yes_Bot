@@ -21,6 +21,11 @@ namespace DNS_YES_BOT.VoteService
             }
             else
             {
+                if (_votes.Count >= 50)
+                {
+                    var oldestKey = _votes.Keys.First();
+                    _votes.Remove(oldestKey);
+                }
                 _votes.Add(chatId, new VoteEntity()
                 {
                     VoteResults = new Dictionary<string, List<string>>

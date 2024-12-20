@@ -77,16 +77,22 @@ namespace DNS_YES_BOT.EventHandlers
                 await _botClient.SendMessage(msg.Chat.Id, "Голосование в этом чате уже было проведено");
                 return;
             }
+
             var shops = await _shopRepo.GetShopsAsync();
+
             var buttons = shops
                 .Select(shop => InlineKeyboardButton.WithCallbackData(
                     shop.ShopName,
                     $"vote_{shop.ShopName}"))
-                      .ToList();
+                .Select((button, index) => new { button, index })
+                .GroupBy(x => x.index / 1)  
+                .Select(group => group.Select(x => x.button).ToList())
+                .ToList();
+
             await _botClient.SendMessage(
-          msg.Chat.Id,
-          "Нажмите кнопку вашего магазина, чтобы подтвердить ознакомление с информацией:",
-          replyMarkup: new InlineKeyboardMarkup(buttons));
+                msg.Chat.Id,
+                "Нажмите кнопку вашего магазина, чтобы подтвердить ознакомление с информацией:",
+                replyMarkup: new InlineKeyboardMarkup(buttons));
         }
 
         private async Task ShowVoteResults(Message msg)
@@ -104,12 +110,13 @@ namespace DNS_YES_BOT.EventHandlers
             var resultMessage = string.Join("\n\n",
                                        results.VoteResults.Select(item =>
                                        $"{item.Key}: {string.Join(", ", item.Value)}"));
+            var dontVote = string.Join(", ", results.VoteResults.Where(item => item.Value.Count == 0).Select(item => item.Key));
             try
             {
-                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:/nВсего магазинов проговлено: {results.VoteResults.Count}" +
-                    $"/nМагазинов не проголосовало: {_shopRepo.GetShopsCountAsync().Result - results.VoteResults.Count}");
-
-               await _botClient.SendMessage(msg.From.Id, resultMessage);
+                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\nВсего магазинов проговлено: {results.VoteResults.Count}" +
+                    $"\nМагазинов не проголосовало: {_shopRepo.GetShopsCountAsync().Result - results.VoteResults.Count}");
+                await _botClient.SendMessage(msg.From.Id, $"Не проголосовавшие магазины: {dontVote}");
+                await _botClient.SendMessage(msg.From.Id, $"Проголосовавшие магазины:\n{resultMessage}");
             }
             catch (Exception)
             {

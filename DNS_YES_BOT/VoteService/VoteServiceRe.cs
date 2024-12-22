@@ -59,13 +59,14 @@ namespace DNS_YES_BOT.VoteService
         {
             var json = JsonSerializer.Serialize(_votes);
             var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
+            var filePath = Path.Combine(directory, "votes.json");
 
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            File.WriteAllText(directory, json);
+            File.WriteAllText(filePath, json);
         }
         private void LoadVotesDict()
         {

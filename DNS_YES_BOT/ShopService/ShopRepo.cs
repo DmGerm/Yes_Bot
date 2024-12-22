@@ -55,13 +55,14 @@ namespace DNS_YES_BOT.ShopService
         {
             var json = JsonSerializer.Serialize(_shops);
             var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
+            var filePath = Path.Combine(directory, "shops.json");
 
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            File.WriteAllText(directory, json);
+            File.WriteAllText(filePath, json);
         }
 
         public Task<Guid> GetShopIdAsync(string shopName) => Task.FromResult(_shops.FirstOrDefault(x => x.ShopName == shopName)?.ShopId 

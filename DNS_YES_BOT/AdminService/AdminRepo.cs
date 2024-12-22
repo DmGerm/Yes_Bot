@@ -44,12 +44,13 @@ namespace DNS_YES_BOT.UserService
         {
             var json = JsonSerializer.Serialize(_adminsID);
             var directory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
+            var filePath = Path.Combine(directory, "userIds.json");
 
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
-            File.WriteAllText(directory, json);
+            File.WriteAllText(filePath, json);
         }
     }
 }

@@ -107,15 +107,22 @@ namespace DNS_YES_BOT.EventHandlers
             }
 
             var results = await _voteService.GetResultsAsync(msg.Chat.Id);
+
+            var allShops = await _shopRepo.GetShopsAsync();
+            var votedShops = results.VoteResults.Select(item => item.Key).ToHashSet();
+            var nonVotedShops = allShops
+                                        .Where(shop => !votedShops.Contains(shop.ShopName))
+                                        .Select(shop => shop.ShopName)
+                                        .ToList();
+
             var resultMessage = string.Join("\n\n",
                                        results.VoteResults.Select(item =>
                                        $"{item.Key}: {string.Join(", ", item.Value)}"));
-            var dontVote = string.Join(", ", results.VoteResults.Where(item => item.Value.Count == 0).Select(item => item.Key));
             try
             {
-                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\nВсего магазинов проговлено: {results.VoteResults.Count}" +
+                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\nВсего магазинов проголосовало: {results.VoteResults.Count}" +
                     $"\nМагазинов не проголосовало: {_shopRepo.GetShopsCountAsync().Result - results.VoteResults.Count}");
-                await _botClient.SendMessage(msg.From.Id, $"Не проголосовавшие магазины: {dontVote}");
+                await _botClient.SendMessage(msg.From.Id, $"Не проголосовавшие магазины: {nonVotedShops}");
                 await _botClient.SendMessage(msg.From.Id, $"Проголосовавшие магазины:\n{resultMessage}");
             }
             catch (Exception)

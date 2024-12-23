@@ -112,6 +112,7 @@ namespace DNS_YES_BOT.EventHandlers
                     if (!await _shopRepo.IsShopExistAsync(message.Text))
                     {
                         await _botClient.SendMessage(query.Message.Chat.Id, $"Магазин с названием \"{message.Text}\" не существует в базе.");
+                        ReplaceOnMessageHandler(null);
                     }
                     else
                     {

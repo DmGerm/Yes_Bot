@@ -122,7 +122,7 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\nВсего магазинов проголосовало: {results.VoteResults.Count}" +
                     $"\nМагазинов не проголосовало: {_shopRepo.GetShopsCountAsync().Result - results.VoteResults.Count}");
-                await _botClient.SendMessage(msg.From.Id, $"Не проголосовавшие магазины: {nonVotedShops}");
+                await _botClient.SendMessage(msg.From.Id, $"Не проголосовавшие магазины: {String.Join(", ", nonVotedShops)}");
                 await _botClient.SendMessage(msg.From.Id, $"Проголосовавшие магазины:\n{resultMessage}");
             }
             catch (Exception)

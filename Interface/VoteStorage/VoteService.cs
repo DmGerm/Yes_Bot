@@ -4,14 +4,14 @@ namespace Interface.VoteStorage
 {
     public class VoteService : IVoteService
     {
-        private Dictionary<long, VoteEntity> _votesStorage = new();
-
-        public Dictionary<long, VoteEntity> GetVotes() => _votesStorage;
-
-        public void SyncVotes(Dictionary<long, VoteEntity> votes)
+        public string GetPageUrl(VoteEntity voteEntity)
         {
-            _votesStorage.Clear();
-            _votesStorage = votes;
+            throw new NotImplementedException();
+        }
+
+        private async Task RemoveVoteUrlByTimer()
+        {
+            throw new NotImplementedException();
         }
     }
 }

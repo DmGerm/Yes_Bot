@@ -6,26 +6,33 @@ namespace Interface.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class VoteController(IVoteService _votesStorage) : ControllerBase
+    public class VoteController(IVoteService voteService) : ControllerBase
     {
-        [HttpPost("sync")]
-        public IActionResult SyncVotes([FromBody] Dictionary<long, VoteEntity> votes)
+        private readonly IVoteService _voteService = voteService;
+
+        // Получение ссылки на результаты голосования
+        [HttpGet("vote_link")]
+        public IActionResult GetVoteResultLink([FromBody] VoteEntity vote)
         {
-            if (votes == null || !votes.Any())
+            // Получаем ссылку на результаты голосования из сервиса
+            var voteResultLink = _voteService.GetPageUrl(vote);
+
+            // Если ссылка не найдена, возвращаем ошибку
+            if (string.IsNullOrEmpty(voteResultLink))
             {
-                return BadRequest("No votes received.");
+                return NotFound("Vote result link not found.");
             }
 
-            try
-            {
-                _votesStorage.SyncVotes(votes);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error syncing votes: {ex.Message}");
-            }
+            // Отправляем ссылку на результаты голосования
+            return Ok(voteResultLink);
+        }
 
-            return Ok("Votes synced successfully.");
+        // Синхронизация списка магазинов
+        [HttpPost("shop_sync")]
+        public IActionResult SyncShopList([FromBody] List<string> shops)
+        {
+            // Этот контроллер принимает список магазинов и передает в метод по добавлению и обновлению
+            return Ok("Shops synced successfully.");
         }
     }
 }

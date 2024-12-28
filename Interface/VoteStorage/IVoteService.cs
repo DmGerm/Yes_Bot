@@ -4,7 +4,11 @@ namespace Interface.VoteStorage
 {
     public interface IVoteService
     {
-        public void SyncVotes(Dictionary<long, VoteEntity> votes);
-        public Dictionary<long, VoteEntity> GetVotes();
+        public string GetPageUrl(VoteEntity voteEntity);
+        public List<string> GetShopsNames();
+        public List<string> GetUsersNamesByShop(string shopName);
+        public List<string> GetVotedShops();
+        public List<string> GenNotVotedShops();
+        public void SyncShops(List<string> shops);
     }
 }

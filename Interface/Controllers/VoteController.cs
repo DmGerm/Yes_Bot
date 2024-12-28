@@ -1,40 +1,31 @@
 ﻿using Interface.Models;
+using Interface.VoteStorage;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Interface.Controllers
 {
-    [ApiController] 
-    [Route("api/[controller]")] 
-    public class VoteController : ControllerBase
+    [ApiController]
+    [Route("api/[controller]")]
+    public class VoteController(IVoteService _votesStorage) : ControllerBase
     {
-        private Dictionary<long, VoteEntity> _votesStorage = [];
-
-        [HttpGet] 
-        public IActionResult Get()
+        [HttpPost("sync")]
+        public IActionResult SyncVotes([FromBody] Dictionary<long, VoteEntity> votes)
         {
-            return Ok(new { Message = "Hello from VoteController API!" });
-        }
-        [HttpPost]
-        public IActionResult AddOrUpdateVote(long chatId, [FromBody] VoteEntity voteEntity)
-        {
-            if (voteEntity == null)
+            if (votes == null || !votes.Any())
             {
-                return BadRequest("VoteEntity is null.");
+                return BadRequest("No votes received.");
             }
 
-            _votesStorage[chatId] = voteEntity;
-            return Ok("Vote data added or updated.");
-        }
-
-        [HttpGet("{chatId:long}")]
-        public IActionResult GetVoteResults(long chatId)
-        {
-            if (!_votesStorage.TryGetValue(chatId, out var voteEntity))
+            try
             {
-                return NotFound($"No votes found for ChatId: {chatId}");
+                _votesStorage.SyncVotes(votes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error syncing votes: {ex.Message}");
             }
 
-            return Ok(voteEntity);
+            return Ok("Votes synced successfully.");
         }
     }
 }

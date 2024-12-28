@@ -30,4 +30,8 @@
     <None Remove="..\.dockerignore" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="RouteTelegramData\" />
+  </ItemGroup>
+
 </Project>

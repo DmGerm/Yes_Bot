@@ -1,4 +1,8 @@
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Interface.Components;
+using Interface.Controllers;
+using Interface.VoteStorage;
 
 namespace Interface
 {
@@ -18,6 +22,13 @@ namespace Interface
 
             builder.Services.AddSwaggerGen();
 
+            builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory())
+                        .ConfigureContainer<ContainerBuilder>(builder =>
+                        {
+                            builder.RegisterType<VoteService>().As<IVoteService>().SingleInstance();
+                        });
+
+
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -25,8 +36,6 @@ namespace Interface
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
-
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

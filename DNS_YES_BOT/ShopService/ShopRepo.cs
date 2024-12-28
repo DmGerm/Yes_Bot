@@ -1,5 +1,4 @@
 ﻿using DNS_YES_BOT.Models;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -15,7 +14,8 @@ namespace DNS_YES_BOT.ShopService
             try
             {
                 LoadShopList();
-                SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
+                if (_shops.Count != 0)
+                    SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -30,7 +30,8 @@ namespace DNS_YES_BOT.ShopService
             try
             {
                 SaveShopsList();
-                SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
+                if (_shops.Count != 0)
+                    SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -52,7 +53,8 @@ namespace DNS_YES_BOT.ShopService
             try
             {
                 SaveShopsList();
-                SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
+                if (_shops.Count != 0)
+                    SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {

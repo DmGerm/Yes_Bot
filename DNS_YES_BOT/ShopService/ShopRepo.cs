@@ -1,4 +1,6 @@
 ﻿using DNS_YES_BOT.Models;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -6,20 +8,38 @@ namespace DNS_YES_BOT.ShopService
 {
     public class ShopRepo : IShopRepo
     {
+        private readonly HttpClient _httpClient = new();
         private readonly List<Shop> _shops = [];
         public ShopRepo()
         {
-            LoadShopList();
+            try
+            {
+                LoadShopList();
+                SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public Task AddShopAsync(string shopName)
         {
             _shops.Add(new() { ShopName = shopName, ShopId = Guid.NewGuid() });
-            SaveShopsList();
+
+            try
+            {
+                SaveShopsList();
+                SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             return Task.CompletedTask;
         }
         public Task<List<Shop>> GetShopsAsync() => Task.FromResult(_shops);
-        
+
 
         public Task<List<string>> GetShopNamesAsync() => Task.FromResult(_shops.Select(x => x.ShopName).ToList());
 
@@ -29,7 +49,15 @@ namespace DNS_YES_BOT.ShopService
         {
             _shops.Remove(_shops.FirstOrDefault(x => x.ShopName == shopName) ??
                           throw new InvalidOperationException("Shop not found"));
-            SaveShopsList();
+            try
+            {
+                SaveShopsList();
+                SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             return Task.CompletedTask;
         }
 
@@ -65,12 +93,24 @@ namespace DNS_YES_BOT.ShopService
             File.WriteAllText(filePath, json);
         }
 
-        public Task<Guid> GetShopIdAsync(string shopName) => Task.FromResult(_shops.FirstOrDefault(x => x.ShopName == shopName)?.ShopId 
+        public Task<Guid> GetShopIdAsync(string shopName) => Task.FromResult(_shops.FirstOrDefault(x => x.ShopName == shopName)?.ShopId
                                                                             ?? throw new InvalidOperationException("Shop not found"));
 
-        public object GetShopNameById(Guid key) => _shops.FirstOrDefault(x => x.ShopId == key)?.ShopName 
+        public object GetShopNameById(Guid key) => _shops.FirstOrDefault(x => x.ShopId == key)?.ShopName
                                                    ?? throw new InvalidOperationException("Shop not found");
 
-        public Task<int> GetShopsCountAsync() =>  Task.FromResult(_shops.Count);
+        public Task<int> GetShopsCountAsync() => Task.FromResult(_shops.Count);
+
+        private async Task SendShopToController(List<string> shops)
+        {
+            var json = JsonSerializer.Serialize(shops);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("https://localhost:7003/api/Vote/shop_sync", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(response.ReasonPhrase);
+            }
+        }
     }
 }

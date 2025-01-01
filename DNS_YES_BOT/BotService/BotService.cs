@@ -1,4 +1,5 @@
 ﻿using DNS_YES_BOT.EventHandlers;
+using DNS_YES_BOT.RouteTelegramData;
 using DNS_YES_BOT.ShopService;
 using DNS_YES_BOT.UserService;
 using DNS_YES_BOT.VoteService;
@@ -14,12 +15,14 @@ namespace DNS_YES_BOT.BotService
         private readonly IAdminRepo _adminRepo = new AdminRepo();
         private readonly IShopRepo _shopRepo = new ShopRepo();
         private readonly IVoteService _voteService = new VoteServiceRe();
+        private IRouteData _routeData;
         private bool _isDisposed = false;
         public async Task BotRun()
         {
-
             using var cts = new CancellationTokenSource();
+            _routeData = new RouteData(_shopRepo, cts.Token);
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
+            var sendDataTask = Task.Run(() => _routeData.SendDataAsync());
 
             AssemblyLoadContext.Default.Unloading += ctx =>
              {
@@ -79,6 +82,7 @@ namespace DNS_YES_BOT.BotService
                 bot.OnUpdate -= onUpdateHandler.OnUpdate;
 
                 cts.Dispose();
+                _routeData.Dispose();
                 _isDisposed = true;
                 Console.WriteLine("Бот успешно остановлен.");
             }

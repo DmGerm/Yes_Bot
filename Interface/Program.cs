@@ -1,7 +1,6 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Interface.Components;
-using Interface.Controllers;
 using Interface.VoteStorage;
 
 namespace Interface
@@ -44,6 +43,17 @@ namespace Interface
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/")
+                {
+                    context.Response.StatusCode = 404;
+                    return;
+                }
+
+                await next();
+            });
 
             app.UseHttpsRedirection();
 

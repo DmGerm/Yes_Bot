@@ -1,42 +1,51 @@
 ﻿using Interface.Models;
+using System.Collections.Concurrent;
 
 namespace Interface.VoteStorage
 {
     public class VoteService : IVoteService
     {
-        public List<string> GenNotVotedShops()
-        {
-            throw new NotImplementedException();
-        }
+        private List<string> _shops = [];
+        private readonly ConcurrentDictionary<string, VoteEntity> _voteSessions = new();
+        private readonly TimeSpan _linkExpiryTime = TimeSpan.FromMinutes(30);
 
         public string GetPageUrl(VoteEntity voteEntity)
         {
-            throw new NotImplementedException();
+            if (voteEntity == null)
+                throw new ArgumentNullException(nameof(voteEntity));
+
+            string token = Guid.NewGuid().ToString();
+
+            _voteSessions[token] = voteEntity;
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(_linkExpiryTime);
+                _voteSessions.TryRemove(token, out _);
+            });
+
+            return $"/vote/{token}";
         }
 
-        public List<string> GetShopsNames()
-        {
-            throw new NotImplementedException();
-        }
+        public List<string> GetShopsNames() => _shops;
 
-        public List<string> GetUsersNamesByShop(string shopName)
+        public VoteEntity GetVoteResult(string token)
         {
-            throw new NotImplementedException();
-        }
-
-        public List<string> GetVotedShops()
-        {
-            throw new NotImplementedException();
+            _voteSessions.TryGetValue(token, out var voteEntity);
+            return voteEntity ?? throw new KeyNotFoundException();
         }
 
         public void SyncShops(List<string> shops)
         {
-            throw new NotImplementedException();
-        }
-
-        private async Task RemoveVoteUrlByTimer()
-        {
-            throw new NotImplementedException();
+            try
+            {
+                _shops.Clear();
+                _shops.AddRange(shops);
+            }
+            catch
+            {
+                throw;
+            }
         }
     }
 }

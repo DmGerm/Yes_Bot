@@ -32,6 +32,14 @@ namespace Interface.Controllers
         public IActionResult SyncShopList([FromBody] List<string> shops)
         {
             // Этот контроллер принимает список магазинов и передает в метод по добавлению и обновлению
+            try
+            {
+                _voteService.SyncShops(shops);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
             return Ok("Shops synced successfully.");
         }
     }

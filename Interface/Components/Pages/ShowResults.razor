@@ -1,9 +1,39 @@
-﻿@page "/showresults"
-@attribute [StreamRendering]
+﻿@page "/vote/{Token}"
+@using Interface.Models
+@using Interface.VoteStorage
+@inject IVoteService VoteService 
+
 <PageTitle>Results</PageTitle>
 
 <h3>ShowResults</h3>
 
-@code {
+<ul>
+    @foreach (var shop in VoteService.GetShopsNames())
+    {
+        <li>@shop</li>
+    }
+</ul>
 
+@code {
+    private List<string> _shops = new();
+    private VoteEntity _voteResult = new();
+    public string Token { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _shops = VoteService.GetShopsNames();
+        _voteResult = VoteService.GetVoteResult(Token);
+    }
+
+    private List<string> GetVotedAndNonVotedShops(out List<string> votedShops)
+    {
+        votedShops = _voteResult.VoteResults.Select(x => x.Key).ToList();
+        var votedHash = votedShops.ToHashSet();
+        var nonVotedShops = _shops
+                            .Where(shop => !votedHash.Contains(shop))
+                            .Select(shop => shop)
+                            .ToList();
+
+        return nonVotedShops;
+    }
 }

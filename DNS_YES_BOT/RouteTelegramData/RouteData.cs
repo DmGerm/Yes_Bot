@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace DNS_YES_BOT.RouteTelegramData
 {
-    public class RouteData(IShopRepo shopRepo, CancellationToken cancellationToken) : IRouteData, IDisposable
+    public class RouteData(IShopRepo shopRepo, CancellationToken cancellationToken) : IRouteData
     {
         private readonly IShopRepo _shopRepo = shopRepo;
         private readonly HttpClient _httpClient = new HttpClient();

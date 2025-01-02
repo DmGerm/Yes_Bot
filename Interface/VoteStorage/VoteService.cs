@@ -23,8 +23,7 @@ namespace Interface.VoteStorage
                 await Task.Delay(_linkExpiryTime);
                 _voteSessions.TryRemove(token, out _);
             });
-
-            return $"/vote/{token}";
+            return $"https://localhost:7030/vote/{token}";
         }
 
         public List<string> GetShopsNames() => _shops;

@@ -38,7 +38,7 @@ namespace DNS_YES_BOT.BotService
                 cts.Cancel();
             };
 
-            OnMessageHandler messageHandler = new(bot, _shopRepo, _voteService, _adminRepo);
+            OnMessageHandler messageHandler = new(bot, _shopRepo, _voteService, _adminRepo, _routeData);
             OnUpdateHandler onUpdateHandler = new(bot, _adminRepo, _shopRepo, _voteService);
 
             var me = await bot.GetMe();

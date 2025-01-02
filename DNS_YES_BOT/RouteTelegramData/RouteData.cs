@@ -1,4 +1,5 @@
-﻿using DNS_YES_BOT.ShopService;
+﻿using DNS_YES_BOT.Models;
+using DNS_YES_BOT.ShopService;
 using System.Text;
 using System.Text.Json;
 
@@ -41,11 +42,26 @@ namespace DNS_YES_BOT.RouteTelegramData
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Exception occurred: {ex.Message}");
-                    await Task.Delay(30000, cancellationToken); 
+                    await Task.Delay(30000, cancellationToken);
                     continue;
                 }
 
                 await Task.Delay(30000, cancellationToken);
+            }
+        }
+        public async Task<string> GetVoteUrlAsync(VoteEntity voteEntity)
+        {
+            if (voteEntity == null)
+                throw new ArgumentNullException(nameof(voteEntity));
+
+            try
+            {
+                var response = await _httpClient.PostAsync("https://localhost:7030/api/vote/vote_link", new StringContent(JsonSerializer.Serialize(voteEntity), Encoding.UTF8, "application/json"));
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error sending data: {ex.Message}");
             }
         }
 

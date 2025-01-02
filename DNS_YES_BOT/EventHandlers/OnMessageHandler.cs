@@ -1,4 +1,5 @@
-﻿using DNS_YES_BOT.ShopService;
+﻿using DNS_YES_BOT.RouteTelegramData;
+using DNS_YES_BOT.ShopService;
 using DNS_YES_BOT.UserService;
 using DNS_YES_BOT.VoteService;
 using Telegram.Bot;
@@ -8,12 +9,14 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DNS_YES_BOT.EventHandlers
 {
-    public class OnMessageHandler(TelegramBotClient telegramBotClient, IShopRepo shopRepo, IVoteService voteService, IAdminRepo adminRepo)
+    public class OnMessageHandler(TelegramBotClient telegramBotClient, IShopRepo shopRepo, IVoteService voteService, IAdminRepo adminRepo, IRouteData routeData)
     {
         private readonly TelegramBotClient _botClient = telegramBotClient;
         private readonly IShopRepo _shopRepo = shopRepo;
         private readonly IVoteService _voteService = voteService;
         private readonly IAdminRepo _userRepo = adminRepo;
+        private readonly IRouteData _routeData = routeData;
+
         public async Task OnMessage(Message msg, UpdateType type)
         {
             if (msg.From is null || msg.Text is null)
@@ -107,28 +110,9 @@ namespace DNS_YES_BOT.EventHandlers
             }
 
             var results = await _voteService.GetResultsAsync(msg.Chat.Id);
+            var url = await _routeData.GetVoteUrlAsync(results);
 
-            var allShops = await _shopRepo.GetShopsAsync();
-            var votedShops = results.VoteResults.Select(item => item.Key).ToHashSet();
-            var nonVotedShops = allShops
-                                        .Where(shop => !votedShops.Contains(shop.ShopName))
-                                        .Select(shop => shop.ShopName)
-                                        .ToList();
-
-            var resultMessage = string.Join("\n\n",
-                                       results.VoteResults.Select(item =>
-                                       $"{item.Key}: {string.Join(", ", item.Value)}"));
-            try
-            {
-                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\nВсего магазинов проголосовало: {results.VoteResults.Count}" +
-                    $"\nМагазинов не проголосовало: {_shopRepo.GetShopsCountAsync().Result - results.VoteResults.Count}");
-                await _botClient.SendMessage(msg.From.Id, $"Не проголосовавшие магазины: {String.Join(", ", nonVotedShops)}");
-                await _botClient.SendMessage(msg.From.Id, $"Проголосовавшие магазины:\n{resultMessage}");
-            }
-            catch (Exception)
-            {
-                await _botClient.SendMessage(msg.Chat.Id, "Для просмотра результатов начните отдельный чат с ботом!");
-            }
+            await _botClient.SendMessage(msg.From.Id, $"Результаты голосования (ссылка действительна 30 минут:\n{url}");
         }
 
         private async Task HandleAddAdmin(Message message)

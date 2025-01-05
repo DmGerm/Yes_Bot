@@ -19,7 +19,7 @@ namespace DNS_YES_BOT.RouteTelegramData
                     var json = JsonSerializer.Serialize(shopList);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    var response = await _httpClient.PostAsync("https://localhost:7030/api/Vote/shop_sync", content, cancellationToken);
+                    var response = await _httpClient.PostAsync("http://interface:7030/api/Vote/shop_sync", content, cancellationToken);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -48,7 +48,7 @@ namespace DNS_YES_BOT.RouteTelegramData
 
             try
             {
-                var response = await _httpClient.PostAsync("https://localhost:7030/api/vote/vote_link", new StringContent(JsonSerializer.Serialize(voteEntity), Encoding.UTF8, "application/json"));
+                var response = await _httpClient.PostAsync("http://interface:7030/api/vote/vote_link", new StringContent(JsonSerializer.Serialize(voteEntity), Encoding.UTF8, "application/json"));
                 return await response.Content.ReadAsStringAsync();
             }
             catch (Exception ex)

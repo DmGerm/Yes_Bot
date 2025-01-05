@@ -5,50 +5,42 @@ using System.Text.Json;
 
 namespace DNS_YES_BOT.RouteTelegramData
 {
-    public class RouteData(IShopRepo shopRepo, CancellationToken cancellationToken) : IRouteData
+    public class RouteData(CancellationToken cancellationToken) : IRouteData
     {
-        private readonly IShopRepo _shopRepo = shopRepo;
         private readonly HttpClient _httpClient = new HttpClient();
         private bool disposedValue;
 
-        public async Task SendDataAsync()
+        public async Task SendDataOnceAsync(List <string> shopList)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                try
+                if (shopList.Count > 0)
                 {
-                    List<string> shopList = await _shopRepo.GetShopNamesAsync();
-                    if (shopList.Count > 0)
+                    var json = JsonSerializer.Serialize(shopList);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await _httpClient.PostAsync("https://localhost:7030/api/Vote/shop_sync", content, cancellationToken);
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        var json = JsonSerializer.Serialize(shopList);
-                        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                        var response = await _httpClient.PostAsync("https://localhost:7030/api/Vote/shop_sync", content, cancellationToken);
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            Console.WriteLine("Data sent successfully.");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Error sending data: {response.StatusCode}");
-                        }
+                        Console.WriteLine("Data sent successfully.");
                     }
                     else
                     {
-                        Console.WriteLine("No shops found to sync.");
+                        Console.WriteLine($"Error sending data: {response.StatusCode}");
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    Console.WriteLine($"Exception occurred: {ex.Message}");
-                    await Task.Delay(30000, cancellationToken);
-                    continue;
+                    Console.WriteLine("No shops found to sync.");
                 }
-
-                await Task.Delay(30000, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception occurred: {ex.Message}");
             }
         }
+
         public async Task<string> GetVoteUrlAsync(VoteEntity voteEntity)
         {
             if (voteEntity == null)

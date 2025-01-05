@@ -1,16 +1,19 @@
 ﻿using DNS_YES_BOT.Models;
+using DNS_YES_BOT.RouteTelegramData;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DNS_YES_BOT.ShopService
 {
-    public class ShopRepo : IShopRepo
+    public class ShopRepo() : IShopRepo
     {
         private readonly HttpClient _httpClient = new();
         private readonly List<Shop> _shops = [];
-        public ShopRepo()
+        private readonly IRouteData? _routeData;
+        public ShopRepo(IRouteData routeData) : this()
         {
+            _routeData = routeData;
             try
             {
                 LoadShopList();
@@ -23,13 +26,14 @@ namespace DNS_YES_BOT.ShopService
             }
         }
 
-        public Task AddShopAsync(string shopName)
+        public async Task AddShopAsync(string shopName)
         {
             _shops.Add(new() { ShopName = shopName, ShopId = Guid.NewGuid() });
 
             try
             {
                 SaveShopsList();
+                await _routeData.SendDataOnceAsync(await GetShopNamesAsync());
                 if (_shops.Count != 0)
                     SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
             }
@@ -37,7 +41,6 @@ namespace DNS_YES_BOT.ShopService
             {
                 Console.WriteLine(ex.Message);
             }
-            return Task.CompletedTask;
         }
         public Task<List<Shop>> GetShopsAsync() => Task.FromResult(_shops);
 
@@ -46,13 +49,14 @@ namespace DNS_YES_BOT.ShopService
 
         public Task<bool> IsShopExistAsync(string shopName) => Task.FromResult(_shops.Any(x => x.ShopName == shopName));
 
-        public Task RemoveShopAsync(string shopName)
+        public async Task RemoveShopAsync(string shopName)
         {
             _shops.Remove(_shops.FirstOrDefault(x => x.ShopName == shopName) ??
                           throw new InvalidOperationException("Shop not found"));
             try
             {
                 SaveShopsList();
+                await _routeData.SendDataOnceAsync(await GetShopNamesAsync());
                 if (_shops.Count != 0)
                     SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
             }
@@ -60,7 +64,6 @@ namespace DNS_YES_BOT.ShopService
             {
                 Console.WriteLine(ex.Message);
             }
-            return Task.CompletedTask;
         }
 
         private void LoadShopList()

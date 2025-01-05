@@ -51,18 +51,23 @@ namespace DNS_YES_BOT.EventHandlers
             if (msg.From is null)
                 throw new ArgumentNullException(nameof(msg), "Message.From cannot be null.");
 
+
             if (msg.Chat.Type != ChatType.Private)
-                await _botClient.SendMessage(msg.Chat.Id, "Данная команда доступна только в личных чатах.");
-
-            if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
+            {
+                var me = await _botClient.GetMe();
+                var button = InlineKeyboardButton.WithUrl("Написать боту", $"https://t.me/{me.Username}");
+                return await _botClient.SendMessage(msg.Chat.Id, "Команда доступна только в личном чате с ботом.", replyMarkup: new InlineKeyboardMarkup(button));
+            }
+            else if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
                 return await _botClient.SendMessage(msg.Chat.Id, "Вы не являетесь администратором!");
-
-            return await _botClient.SendMessage(
-                           msg.Chat.Id,
-                           "Выберите действие:",
-                           replyMarkup: new InlineKeyboardMarkup(
-                           [
-                            [
+            else
+            {
+                return await _botClient.SendMessage(
+                               msg.Chat.Id,
+                               "Выберите действие:",
+                               replyMarkup: new InlineKeyboardMarkup(
+                               [
+                                [
                     InlineKeyboardButton.WithCallbackData("Добавить магазин", "shop_add"),
                     InlineKeyboardButton.WithCallbackData("Добавить сотрудника", "employee_add")
                 ],
@@ -70,7 +75,8 @@ namespace DNS_YES_BOT.EventHandlers
                     InlineKeyboardButton.WithCallbackData("Вывести список магазинов", "shops_show"),
                     InlineKeyboardButton.WithCallbackData("Удалить магазин", "shop_del")
                 ]
-                           ]));
+                               ]));
+            }
         }
 
         private async Task StartNewVote(Message msg)
@@ -88,7 +94,7 @@ namespace DNS_YES_BOT.EventHandlers
                     shop.ShopName,
                     $"vote_{shop.ShopName}"))
                 .Select((button, index) => new { button, index })
-                .GroupBy(x => x.index / 1)  
+                .GroupBy(x => x.index / 1)
                 .Select(group => group.Select(x => x.button).ToList())
                 .ToList();
 
@@ -111,9 +117,17 @@ namespace DNS_YES_BOT.EventHandlers
 
             var results = await _voteService.GetResultsAsync(msg.Chat.Id);
             var url = await _routeData.GetVoteUrlAsync(results);
-
-            await _botClient.SendMessage(msg.From.Id, $"Результаты голосования (ссылка действительна 30 минут:\n{url}");
-        }
+            try
+            {
+                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n{url}\n <a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
+            }
+            catch
+            {
+                var me = await _botClient.GetMe();
+                var button = InlineKeyboardButton.WithUrl("Написать боту", $"https://t.me/{me.Username}");
+                await _botClient.SendMessage(msg.Chat.Id, "Команда доступна после старта личного диалога с ботом.", replyMarkup: new InlineKeyboardMarkup(button));
+            }
+            }
 
         private async Task HandleAddAdmin(Message message)
         {

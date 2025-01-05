@@ -13,22 +13,29 @@ namespace DNS_YES_BOT.BotService
     {
         private readonly string _botToken = botToken;
         private readonly IAdminRepo _adminRepo = new AdminRepo();
-        private readonly IShopRepo _shopRepo = new ShopRepo();
+        private IShopRepo? _shopRepo;
         private readonly IVoteService _voteService = new VoteServiceRe();
-        private IRouteData _routeData;
+        private IRouteData? _routeData;
         private bool _isDisposed = false;
         public async Task BotRun()
         {
             using var cts = new CancellationTokenSource();
-            _routeData = new RouteData(_shopRepo, cts.Token);
+            _routeData = new RouteData(cts.Token);
+            _shopRepo = new ShopRepo(_routeData);
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
-            var sendDataTask = Task.Run(() => _routeData.SendDataAsync());
+            var sendDataTask = Task.Run(async () =>
+            {
+                await Task.Delay(30000);
+                await _routeData.SendDataOnceAsync(await _shopRepo.GetShopNamesAsync());
+            });
 
             AssemblyLoadContext.Default.Unloading += ctx =>
              {
-                 Console.WriteLine("Получен сигнал завершения.");
                  if (!_isDisposed)
+                 {
+                     Console.WriteLine("Получен сигнал завершения.");
                      cts.Cancel();
+                 }
              };
 
             Console.CancelKeyPress += (_, e) =>
@@ -46,7 +53,7 @@ namespace DNS_YES_BOT.BotService
             bot.OnError += OnErrorHandler.OnError;
             bot.OnMessage += messageHandler.OnMessage;
             bot.OnUpdate += onUpdateHandler.OnUpdate;
-            
+
             Console.WriteLine($"@{me.Username} Запущен... ");
 
             try
@@ -65,7 +72,7 @@ namespace DNS_YES_BOT.BotService
                     AssemblyLoadContext.Default.Unloading += _ => cts.Cancel();
                     Console.CancelKeyPress += (_, e) =>
                     {
-                        e.Cancel = true; 
+                        e.Cancel = true;
                         cts.Cancel();
                     };
                     await Task.Delay(Timeout.Infinite, cts.Token);

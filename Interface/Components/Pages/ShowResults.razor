@@ -1,8 +1,10 @@
-﻿    @page "/vote/{Token}"
-    @using Interface.Models
-    @using Interface.VoteStorage
-    @inject IVoteService VoteService
-    @inject NavigationManager NavigationManager
+﻿@attribute [IgnoreAntiforgeryToken]
+@page "/vote/{Token}"
+@using Interface.Models
+@using Interface.VoteStorage
+@using Microsoft.AspNetCore.Mvc
+@inject IVoteService VoteService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Results</PageTitle>
 
@@ -93,4 +95,4 @@
 
         return nonVotedShops;
     }
-    }
+}

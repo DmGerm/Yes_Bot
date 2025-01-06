@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNS_YES_BOT", "DNS_YES_BOT\DNS_YES_BOT.csproj", "{492F82C5-4F0E-475C-8BCB-0C0FD175B757}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interface", "Interface\Interface.csproj", "{9224BC79-F350-4B3B-8E15-F7F7174F99F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interface", "Interface\Interface.csproj", "{A0FBA4CC-5F54-42DD-8DD2-9D6B59639404}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{492F82C5-4F0E-475C-8BCB-0C0FD175B757}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{492F82C5-4F0E-475C-8BCB-0C0FD175B757}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{492F82C5-4F0E-475C-8BCB-0C0FD175B757}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9224BC79-F350-4B3B-8E15-F7F7174F99F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9224BC79-F350-4B3B-8E15-F7F7174F99F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9224BC79-F350-4B3B-8E15-F7F7174F99F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9224BC79-F350-4B3B-8E15-F7F7174F99F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0FBA4CC-5F54-42DD-8DD2-9D6B59639404}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0FBA4CC-5F54-42DD-8DD2-9D6B59639404}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0FBA4CC-5F54-42DD-8DD2-9D6B59639404}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0FBA4CC-5F54-42DD-8DD2-9D6B59639404}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

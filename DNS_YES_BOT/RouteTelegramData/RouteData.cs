@@ -9,27 +9,27 @@ namespace DNS_YES_BOT.RouteTelegramData
     {
         private readonly HttpClient _httpClient = new HttpClient();
         private bool disposedValue;
-        private string? _csrfToken;
-
+/*        private string? _csrfToken;
+*/
         public async Task SendDataOnceAsync(List<string> shopList)
         {
             try
             {
                 if (shopList.Count > 0)
                 {
-                    if (string.IsNullOrEmpty(_csrfToken))
+ /*                   if (string.IsNullOrEmpty(_csrfToken))
                     {
                         await GetCsrfTokenAsync();
-                    }
+                    }*/
 
                     var json = JsonSerializer.Serialize(shopList);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    if (!string.IsNullOrEmpty(_csrfToken))
+/*                    if (!string.IsNullOrEmpty(_csrfToken))
                     {
                         _httpClient.DefaultRequestHeaders.Remove("RequestVerificationToken");
                         _httpClient.DefaultRequestHeaders.Add("RequestVerificationToken", _csrfToken);
-                    }
+                    }*/
 
                     var response = await _httpClient.PostAsync("http://interface:7030/api/Vote/shop_sync", content, cancellationToken);
 
@@ -60,20 +60,20 @@ namespace DNS_YES_BOT.RouteTelegramData
 
             try
             {
-                if (string.IsNullOrEmpty(_csrfToken))
+/*                if (string.IsNullOrEmpty(_csrfToken))
                 {
                     await GetCsrfTokenAsync();
-                }
+                }*/
 
                 var json = JsonSerializer.Serialize(voteEntity);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                if (!string.IsNullOrEmpty(_csrfToken))
+/*                if (!string.IsNullOrEmpty(_csrfToken))
                 {
                     _httpClient.DefaultRequestHeaders.Remove("RequestVerificationToken");
                     _httpClient.DefaultRequestHeaders.Add("RequestVerificationToken", _csrfToken);
                 }
-
+*/
                 var response = await _httpClient.PostAsync("http://interface:7030/api/vote/vote_link", content);
 
                 if (!response.IsSuccessStatusCode)
@@ -88,7 +88,7 @@ namespace DNS_YES_BOT.RouteTelegramData
                 throw new Exception($"Error retrieving vote URL: {ex.Message}");
             }
         }
-        public async Task<string> GetCsrfTokenAsync()
+/*        public async Task<string> GetCsrfTokenAsync()
         {
             try
             {
@@ -108,7 +108,7 @@ namespace DNS_YES_BOT.RouteTelegramData
             {
                 throw new Exception($"Error retrieving CSRF token: {ex.Message}");
             }
-        }
+        }*/
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

@@ -1,5 +1,6 @@
 ﻿using Interface.Models;
 using Interface.VoteStorage;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Interface.Controllers
@@ -11,6 +12,7 @@ namespace Interface.Controllers
         private readonly IVoteService _voteService = voteService;
 
         [HttpPost("vote_link")]
+        [IgnoreAntiforgeryToken]
         public IActionResult GetVoteResultLink([FromBody] VoteEntity vote)
         {
             var voteResultLink = _voteService.GetPageUrl(vote);
@@ -34,6 +36,14 @@ namespace Interface.Controllers
                 return BadRequest(ex.Message);
             }
             return Ok("Shops synced successfully.");
+        }
+
+        [HttpGet("csrf-token")]
+        public IActionResult GetCsrfToken()
+        {
+            var antiforgery = HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+            var tokens = antiforgery.GetAndStoreTokens(HttpContext);
+            return Ok(new { token = tokens.RequestToken });
         }
     }
 }

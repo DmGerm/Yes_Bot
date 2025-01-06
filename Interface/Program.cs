@@ -2,6 +2,8 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Interface.Components;
 using Interface.VoteStorage;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Interface
 {
@@ -10,6 +12,9 @@ namespace Interface
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddDataProtection()
+                            .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"));
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
@@ -27,13 +32,12 @@ namespace Interface
                             builder.RegisterType<VoteService>().As<IVoteService>().SingleInstance();
                         });
 
-
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwagger();
             }
 
             // Configure the HTTP request pipeline.
@@ -44,16 +48,16 @@ namespace Interface
                 app.UseHsts();
             }
 
-            app.Use(async (context, next) =>
-            {
-                if (!context.Request.Path.StartsWithSegments("/vote"))
-                {
-                    context.Response.StatusCode = 403;
-                    await context.Response.WriteAsync("Access denied.");
-                    return;
-                }
-                await next();
-            });
+                app.Use(async (context, next) =>
+                  {
+                      if (context.Request.Path.StartsWithSegments("/"))
+                      {
+                          context.Response.StatusCode = 403;
+                          await context.Response.WriteAsync("Access denied.");
+                          return;
+                      }
+                      await next();
+                  });
 
             // app.UseHttpsRedirection();
 

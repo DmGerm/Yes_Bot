@@ -46,12 +46,12 @@ namespace Interface
 
             app.Use(async (context, next) =>
             {
-                if (context.Request.Path == "/")
+                if (!context.Request.Path.StartsWithSegments("/vote"))
                 {
-                    context.Response.StatusCode = 404;
+                    context.Response.StatusCode = 403;
+                    await context.Response.WriteAsync("Access denied.");
                     return;
                 }
-
                 await next();
             });
 

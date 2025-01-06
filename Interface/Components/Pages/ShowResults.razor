@@ -1,9 +1,9 @@
-﻿@page "/vote/{Token}"
-@using Interface.Models
-@using Interface.VoteStorage
-@using Microsoft.AspNetCore.Mvc
-@inject IVoteService VoteService
-@inject NavigationManager NavigationManager
+﻿    @page "/vote/{Token}"
+    @using Interface.Models
+    @using Interface.VoteStorage
+    @using Microsoft.AspNetCore.Mvc
+    @inject IVoteService VoteService
+    @inject NavigationManager NavigationManager
 
 <PageTitle>Results</PageTitle>
 
@@ -79,6 +79,7 @@
         }
         catch
         {
+            Console.WriteLine($"Error: {ex.Message}");
             NavigationManager.NavigateTo("/error");
         }
     }
@@ -94,4 +95,4 @@
 
         return nonVotedShops;
     }
-}
+    }

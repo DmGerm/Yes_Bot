@@ -44,6 +44,18 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await ShowAdminPanel(msg);
             }
+
+            if (command == "/help")
+            {
+                await ShowHelp(msg);
+            }
+        }
+
+        private async Task ShowHelp(Message msg)
+        {
+            await _botClient.SendMessage(msg.Chat.Id, "Для начала голосования введите команду /start\n" +
+                "Для просмотра результатов голосования введите команду /results - необходимо иметь личный диалог с ботом\n" +
+                "Для управления ботом введите /admin_service - в личных сообщениях");
         }
 
         private async Task<Message> ShowAdminPanel(Message msg)
@@ -124,8 +136,7 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 if (notVotedShops.Count == 0)
                     await _botClient.SendMessage(msg.From.Id, $"Все магазины проголосовали!");
-                else
-                    await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
+                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
             }
             catch
             {

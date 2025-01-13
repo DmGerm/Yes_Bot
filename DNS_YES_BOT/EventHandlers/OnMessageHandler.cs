@@ -130,11 +130,11 @@ namespace DNS_YES_BOT.EventHandlers
             var results = await _voteService.GetResultsAsync(msg.Chat.Id);
             var shops = await _shopRepo.GetShopsAsync();
             var shopNames = shops.Select(shop => shop.ShopName).ToList();
-            var notVotedShops = results.VoteResults.Where(x => !shopNames.Contains(x.Key)).Select(x => x.Key).ToList();
+            var votedShops = results.VoteResults.Where(x => shopNames.Contains(x.Key)).Select(x => x.Key).ToList();
             var url = await _routeData.GetVoteUrlAsync(results);
             try
             {
-                if (notVotedShops.Count == 0)
+                if (votedShops.Count == shopNames.Count)
                     await _botClient.SendMessage(msg.From.Id, $"Все магазины проголосовали!");
                 await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
             }

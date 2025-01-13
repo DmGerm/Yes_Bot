@@ -110,7 +110,7 @@ namespace DNS_YES_BOT.BotService
                   {
                       new() { Command = "start", Description = "Начать голосование" },
                       new() { Command = "results", Description = "Посмотреть результаты голосования" },
-                      new() { Command = "add_admin", Description = "Добавить администратора" }
+                      new() { Command = "add_admin", Description = "Добавить администратора" },
                       new() { Command = "help", Description = "Получить помощь" },
                   };
 

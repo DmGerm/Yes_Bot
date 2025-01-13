@@ -116,10 +116,16 @@ namespace DNS_YES_BOT.EventHandlers
             }
 
             var results = await _voteService.GetResultsAsync(msg.Chat.Id);
+            var shops = await _shopRepo.GetShopsAsync();
+            var shopNames = shops.Select(shop => shop.ShopName).ToList();
+            var notVotedShops = results.VoteResults.Where(x => !shopNames.Contains(x.Key)).Select(x => x.Key).ToList();
             var url = await _routeData.GetVoteUrlAsync(results);
             try
             {
-                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n{url}\n <a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
+                if (notVotedShops.Count == 0)
+                    await _botClient.SendMessage(msg.From.Id, $"Все магазины проголосовали!");
+                else
+                    await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
             }
             catch
             {
@@ -127,7 +133,7 @@ namespace DNS_YES_BOT.EventHandlers
                 var button = InlineKeyboardButton.WithUrl("Написать боту", $"https://t.me/{me.Username}");
                 await _botClient.SendMessage(msg.Chat.Id, "Команда доступна после старта личного диалога с ботом.", replyMarkup: new InlineKeyboardMarkup(button));
             }
-            }
+        }
 
         private async Task HandleAddAdmin(Message message)
         {

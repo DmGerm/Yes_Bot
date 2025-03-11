@@ -51,12 +51,9 @@ namespace DNS_YES_BOT.EventHandlers
             }
         }
 
-        private async Task ShowHelp(Message msg)
-        {
-            await _botClient.SendMessage(msg.Chat.Id, "Для начала голосования введите команду /start\n" +
-                "Для просмотра результатов голосования введите команду /results - необходимо иметь личный диалог с ботом\n" +
-                "Для управления ботом введите /admin_service - в личных сообщениях");
-        }
+        private async Task ShowHelp(Message msg) => await SendMessageToChannel(msg, "Для начала голосования введите команду /start\n" +
+                          "Для просмотра результатов голосования введите команду /results - необходимо иметь личный диалог с ботом\n" +
+                          "Для управления ботом введите /admin_service - в личных сообщениях");
 
         private async Task<Message> ShowAdminPanel(Message msg)
         {
@@ -95,7 +92,7 @@ namespace DNS_YES_BOT.EventHandlers
         {
             if (await _voteService.CheckEntity(msg.Chat.Id))
             {
-                await _botClient.SendMessage(msg.Chat.Id, "Голосование в этом чате уже было проведено");
+                await SendMessageToChannel(msg, "Голосование в этом чате уже было проведено");
                 return;
             }
 
@@ -109,11 +106,8 @@ namespace DNS_YES_BOT.EventHandlers
                 .GroupBy(x => x.index / 1)
                 .Select(group => group.Select(x => x.button).ToList())
                 .ToList();
-
-            await _botClient.SendMessage(
-                msg.Chat.Id,
-                "Нажмите кнопку вашего магазина, чтобы подтвердить ознакомление с информацией:",
-                replyMarkup: new InlineKeyboardMarkup(buttons));
+            var inlineKeyboard = new InlineKeyboardMarkup(buttons);
+            await SendMessageToChannelWithReplyMarkup(msg, "Нажмите кнопку вашего магазина, чтобы подтвердить ознакомление с информацией:", inlineKeyboard);
         }
 
         private async Task ShowVoteResults(Message msg)
@@ -123,7 +117,7 @@ namespace DNS_YES_BOT.EventHandlers
 
             if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
             {
-                await _botClient.SendMessage(msg.Chat.Id, "Вы не являетесь администратором!");
+                await SendMessageToChannel(msg, "Вы не являетесь администратором!");
                 return;
             }
 
@@ -135,14 +129,30 @@ namespace DNS_YES_BOT.EventHandlers
             try
             {
                 if (votedShops.Count == shopNames.Count)
-                    await _botClient.SendMessage(msg.From.Id, $"Все магазины проголосовали!");
+                    await SendMessageToChannel(msg, $"Все магазины проголосовали!");
+
                 await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
+
+                if (msg.ReplyToMessage != null)
+                {
+                    await _botClient.SendMessage(
+                        chatId: msg.Chat.Id,
+                        text: $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html,
+                        replyParameters: msg.ReplyToMessage.MessageId);
+                }
+                else
+                {
+                    await _botClient.SendMessage(
+                        chatId: msg.Chat.Id,
+                        text: $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
+                }
             }
             catch
             {
                 var me = await _botClient.GetMe();
                 var button = InlineKeyboardButton.WithUrl("Написать боту", $"https://t.me/{me.Username}");
-                await _botClient.SendMessage(msg.Chat.Id, "Команда доступна после старта личного диалога с ботом.", replyMarkup: new InlineKeyboardMarkup(button));
+                var inlineKeyboard = new InlineKeyboardMarkup(button);
+                await SendMessageToChannelWithReplyMarkup(msg, "Команда доступна после старта личного диалога с ботом.", inlineKeyboard);
             }
         }
 
@@ -154,13 +164,13 @@ namespace DNS_YES_BOT.EventHandlers
             if (await _userRepo.UserListIsEmptyAsync())
             {
                 await _userRepo.AddAdminAsync(message.From.Id);
-                await _botClient.SendMessage(message.Chat.Id, "Вы стали первым администратором бота.");
+                await SendMessageToChannel(message, "Вы стали первым администратором бота.");
                 return;
             }
 
             if (!await _userRepo.UserIdExistsAsync(message.From.Id))
             {
-                await _botClient.SendMessage(message.Chat.Id, "Вы не являетесь администратором!");
+                await SendMessageToChannel(message, "Вы не являетесь администратором!");
                 return;
             }
 
@@ -174,15 +184,47 @@ namespace DNS_YES_BOT.EventHandlers
                         return InlineKeyboardButton.WithCallbackData(user?.Username ?? "Unknown User", $"add_admin_{user?.Id}");
                     }));
 
-                await _botClient.SendMessage(message.Chat.Id,
-                    "Выберите пользователя для добавления в список администраторов:",
+                await SendMessageToChannelWithReplyMarkup(message, "Выберите пользователя для добавления в список администраторов:", inlineKeyboard);
+            }
+            else
+            {
+                await SendMessageToChannel(message, "В чате нет администраторов.");
+            }
+        }
+
+        private async Task SendMessageToChannel(Message msg, string messageText)
+        {
+            if (msg.ReplyToMessage != null)
+            {
+                await _botClient.SendMessage(
+                    chatId: msg.Chat.Id,
+                    text: messageText,
+                    replyParameters: msg.ReplyToMessage.MessageId);
+            }
+            else
+            {
+                await _botClient.SendMessage(
+                    chatId: msg.Chat.Id,
+                    text: messageText);
+            }
+        }
+
+        private async Task SendMessageToChannelWithReplyMarkup(Message msg, string messageText, InlineKeyboardMarkup inlineKeyboard)
+        {
+            if (msg.ReplyToMessage != null)
+            {
+                await _botClient.SendMessage(
+                    chatId: msg.Chat.Id,
+                    text: messageText,
+                    replyParameters: msg.ReplyToMessage.MessageId,
                     replyMarkup: inlineKeyboard);
             }
             else
             {
-                await _botClient.SendMessage(message.Chat.Id, "В чате нет администраторов.");
+                await _botClient.SendMessage(
+                    chatId: msg.Chat.Id,
+                    text: messageText, replyMarkup: inlineKeyboard);
             }
         }
     }
-
 }

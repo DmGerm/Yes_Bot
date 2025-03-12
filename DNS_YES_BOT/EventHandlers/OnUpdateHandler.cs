@@ -139,12 +139,12 @@ namespace DNS_YES_BOT.EventHandlers
                 if (!await _userRepo.UserIdExistsAsync(id) && query is not null)
                 {
                     await _userRepo.AddAdminAsync(id);
-                    if (query.Message.ReplyToMessage != null)
+                    if (query.Message.MessageThreadId != null)
                     {
                         await _botClient.SendMessage(
                             query.Message!.Chat,
                             text: $"Пользователь {query.From.Username} добавил нового администратора с ID {id}.",
-                            replyParameters: query.Message.ReplyToMessage.MessageId);
+                            messageThreadId: query.Message.ReplyToMessage?.MessageThreadId ?? query.Message.MessageThreadId);
                     }
                     else
                     {
@@ -155,12 +155,12 @@ namespace DNS_YES_BOT.EventHandlers
                 }
                 else
                 {
-                    if (query.Message.Chat.Type is ChatType.Supergroup)
+                    if (query.Message.MessageThreadId != null)
                     {
                         await _botClient.SendMessage(
                             query.Message!.Chat,
                             text: $"Пользователь {query.From.Username} пытается добавить администратора с ID {id}, но он уже существует!",
-                            replyParameters: query.Message.ReplyToMessage.MessageId);
+                            messageThreadId: query.Message.ReplyToMessage?.MessageThreadId ?? query.Message.MessageThreadId);
                     }
                     else
                     {

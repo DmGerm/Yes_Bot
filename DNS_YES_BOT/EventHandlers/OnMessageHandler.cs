@@ -194,12 +194,12 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task SendMessageToChannel(Message msg, string messageText)
         {
-            if (msg.Chat.Type == ChatType.Supergroup)
+            if (msg.MessageThreadId != null)
             {
                 await _botClient.SendMessage(
                     chatId: msg.Chat.Id,
                     text: messageText,
-                    replyParameters: msg.ReplyToMessage.MessageId);
+                    messageThreadId: msg.ReplyToMessage?.MessageThreadId ?? msg.MessageThreadId);
             }
             else
             {
@@ -211,12 +211,12 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task SendMessageToChannelWithReplyMarkup(Message msg, string messageText, InlineKeyboardMarkup inlineKeyboard)
         {
-            if (msg.ReplyToMessage != null)
+            if (msg.MessageThreadId != null)
             {
                 await _botClient.SendMessage(
                     chatId: msg.Chat.Id,
                     text: messageText,
-                    replyParameters: msg.ReplyToMessage.MessageId,
+                    messageThreadId: msg.ReplyToMessage?.MessageThreadId ?? msg.MessageThreadId,
                     replyMarkup: inlineKeyboard);
             }
             else

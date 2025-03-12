@@ -194,7 +194,7 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task SendMessageToChannel(Message msg, string messageText)
         {
-            if (msg.ReplyToMessage != null)
+            if (msg.Chat.Type == ChatType.Supergroup)
             {
                 await _botClient.SendMessage(
                     chatId: msg.Chat.Id,

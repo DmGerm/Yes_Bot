@@ -155,7 +155,7 @@ namespace DNS_YES_BOT.EventHandlers
                 }
                 else
                 {
-                    if (query.Message.ReplyToMessage != null)
+                    if (query.Message.Chat.Type is ChatType.Supergroup)
                     {
                         await _botClient.SendMessage(
                             query.Message!.Chat,

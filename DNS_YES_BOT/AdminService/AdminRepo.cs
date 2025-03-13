@@ -20,13 +20,14 @@ namespace DNS_YES_BOT.UserService
 
         public Task<bool> UserIdExistsAsync(long userId) => Task.FromResult(_adminsID.Contains(userId));
 
+
         public Task RemoveUserIdAsync(long userId)
         {
             _adminsID.Remove(userId);
             return Task.CompletedTask;
         }
 
-        public Task<IEnumerable<long>> GetAllUserIdsAsync() => Task.FromResult(_adminsID.AsEnumerable());
+        public Task<List<long>> GetAllUserIdsAsync() => Task.FromResult(_adminsID.ToList());
 
         public Task<bool> UserListIsEmptyAsync() => Task.FromResult(_adminsID.Count == 0);
 

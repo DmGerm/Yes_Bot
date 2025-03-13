@@ -82,7 +82,7 @@ namespace DNS_YES_BOT.VoteService
                 };
 
                 _votes.Clear();
-                _votes = JsonSerializer.Deserialize<Dictionary<long, VoteEntity>>(json, options) 
+                _votes = JsonSerializer.Deserialize<Dictionary<long, VoteEntity>>(json, options)
                                           ?? throw new InvalidOperationException("Invalid json");
             }
         }

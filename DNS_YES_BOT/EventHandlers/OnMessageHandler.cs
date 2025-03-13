@@ -45,10 +45,45 @@ namespace DNS_YES_BOT.EventHandlers
                 await ShowAdminPanel(msg);
             }
 
+            if (command == "/show_admins")
+            {
+                await ShowAdmins(msg);
+            }
+
             if (command == "/help")
             {
                 await ShowHelp(msg);
             }
+        }
+
+        private async Task<Message> ShowAdmins(Message msg)
+        {
+            if (msg.From is null)
+                throw new ArgumentNullException(nameof(msg), "Message.From cannot be null.");
+
+
+            if (msg.Chat.Type != ChatType.Private)
+            {
+                var me = await _botClient.GetMe();
+                var button = InlineKeyboardButton.WithUrl("Написать боту", $"https://t.me/{me.Username}");
+                await SendMessageToChannel(msg, "Команда доступна только в личном чате с ботом.");
+                return await Task.FromResult(msg);
+            }
+            var adminIds = await _userRepo.GetAllUserIdsAsync();
+
+            var adminsNames = await Task.WhenAll(adminIds.Select(async id =>
+            {
+                try
+                {
+                    var user = await _botClient.GetChat(id);
+                    return !string.IsNullOrEmpty(user.FirstName) ? user.FirstName : id.ToString();
+                }
+                catch
+                {
+                    return id.ToString();
+                }
+            }));
+            return await _botClient.SendMessage(msg.Chat.Id, String.Join("\n", adminsNames));
         }
 
         private async Task ShowHelp(Message msg) => await SendMessageToChannel(msg, "Для начала голосования введите команду /start\n" +
@@ -65,10 +100,13 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 var me = await _botClient.GetMe();
                 var button = InlineKeyboardButton.WithUrl("Написать боту", $"https://t.me/{me.Username}");
-                return await _botClient.SendMessage(msg.Chat.Id, "Команда доступна только в личном чате с ботом.", replyMarkup: new InlineKeyboardMarkup(button));
+                await SendMessageToChannel(msg, "Команда доступна только в личном чате с ботом.");
+                return await Task.FromResult(msg);
             }
             else if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
+            {
                 return await _botClient.SendMessage(msg.Chat.Id, "Вы не являетесь администратором!");
+            }
             else
             {
                 return await _botClient.SendMessage(
@@ -103,7 +141,7 @@ namespace DNS_YES_BOT.EventHandlers
                     shop.ShopName,
                     $"vote_{shop.ShopName}"))
                 .Select((button, index) => new { button, index })
-                .GroupBy(x => x.index / 1)
+                .GroupBy(x => x.index / 2)
                 .Select(group => group.Select(x => x.button).ToList())
                 .ToList();
             var inlineKeyboard = new InlineKeyboardMarkup(buttons);
@@ -121,7 +159,7 @@ namespace DNS_YES_BOT.EventHandlers
                 return;
             }
 
-            var results = await _voteService.GetResultsAsync(msg.Chat.Id);
+            var results = await _voteService.GetResultsAsync(msg.MessageThreadId ?? msg.Chat.Id);
             var shops = await _shopRepo.GetShopsAsync();
             var shopNames = shops.Select(shop => shop.ShopName).ToList();
             var votedShops = results.VoteResults.Where(x => shopNames.Contains(x.Key)).Select(x => x.Key).ToList();
@@ -132,20 +170,6 @@ namespace DNS_YES_BOT.EventHandlers
                     await SendMessageToChannel(msg, $"Все магазины проголосовали!");
 
                 await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
-
-                if (msg.ReplyToMessage != null)
-                {
-                    await _botClient.SendMessage(
-                        chatId: msg.Chat.Id,
-                        text: $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html,
-                        replyParameters: msg.ReplyToMessage.MessageId);
-                }
-                else
-                {
-                    await _botClient.SendMessage(
-                        chatId: msg.Chat.Id,
-                        text: $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
-                }
             }
             catch
             {
@@ -198,8 +222,9 @@ namespace DNS_YES_BOT.EventHandlers
             {
                 await _botClient.SendMessage(
                     chatId: msg.Chat.Id,
-                    text: messageText,
-                    messageThreadId: msg.ReplyToMessage?.MessageThreadId ?? msg.MessageThreadId);
+                    replyParameters: msg.MessageId,
+                    text: messageText
+                    );
             }
             else
             {
@@ -216,7 +241,7 @@ namespace DNS_YES_BOT.EventHandlers
                 await _botClient.SendMessage(
                     chatId: msg.Chat.Id,
                     text: messageText,
-                    messageThreadId: msg.ReplyToMessage?.MessageThreadId ?? msg.MessageThreadId,
+                    replyParameters: msg.MessageId,
                     replyMarkup: inlineKeyboard);
             }
             else

@@ -57,14 +57,18 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task HandleVoteResult(CallbackQuery query, string data)
         {
-            if (query.Message is null || query.Message.From is null)
+            if (query.Message is null || query.From is null)
                 throw new Exception("Message or From is null");
 
-            data.Split('_');
-            var shopName = data.Split('_')[1];
+            var parts = data.Split('_');
+            if (parts.Length < 2)
+                throw new Exception("Invalid callback data format");
 
-            await _voteService.AddEntity(query.Message.Chat.Id, shopName, String.Concat(query.From.FirstName, " ", query.From.LastName));
-            await _botClient.AnswerCallbackQuery(query.Id, "Голос зачтен");
+            var shopName = parts[1];
+
+            long threadId = query.Message.MessageThreadId ?? query.Message.Chat.Id;
+
+            await _voteService.AddEntity(threadId, shopName, $"{query.From.FirstName} {query.From.LastName}");
         }
 
         private async Task HandleShopsShow(CallbackQuery query)
@@ -144,7 +148,7 @@ namespace DNS_YES_BOT.EventHandlers
                         await _botClient.SendMessage(
                             query.Message!.Chat,
                             text: $"Пользователь {query.From.Username} добавил нового администратора с ID {id}.",
-                            messageThreadId: query.Message.ReplyToMessage?.MessageThreadId ?? query.Message.MessageThreadId);
+                            replyParameters: query.Message.MessageId);
                     }
                     else
                     {
@@ -160,7 +164,7 @@ namespace DNS_YES_BOT.EventHandlers
                         await _botClient.SendMessage(
                             query.Message!.Chat,
                             text: $"Пользователь {query.From.Username} пытается добавить администратора с ID {id}, но он уже существует!",
-                            messageThreadId: query.Message.ReplyToMessage?.MessageThreadId ?? query.Message.MessageThreadId);
+                            replyParameters: query.Message.MessageId);
                     }
                     else
                     {

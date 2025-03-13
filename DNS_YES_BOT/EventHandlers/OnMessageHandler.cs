@@ -76,13 +76,20 @@ namespace DNS_YES_BOT.EventHandlers
                 try
                 {
                     var user = await _botClient.GetChat(id);
-                    return !string.IsNullOrEmpty(user.FirstName) ? user.FirstName : id.ToString();
+                    return !string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName)
+                        ? $"{user.FirstName} {user.LastName}"
+                        : !string.IsNullOrEmpty(user.FirstName)
+                            ? user.FirstName
+                            : !string.IsNullOrEmpty(user.LastName)
+                                ? user.LastName
+                                : id.ToString();
                 }
                 catch
                 {
                     return id.ToString();
                 }
             }));
+
             return await _botClient.SendMessage(msg.Chat.Id, String.Join("\n", adminsNames));
         }
 

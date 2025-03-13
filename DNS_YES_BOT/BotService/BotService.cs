@@ -103,6 +103,7 @@ namespace DNS_YES_BOT.BotService
             var privateCommands = new List<BotCommand>
                   {
                  new() { Command = "admin_service", Description = "Панель управления" },
+                 new() { Command = "show_admins", Description = "Посмотреть добавленных администраторов"},
                  new() { Command = "help", Description = "Получить помощь" },
                   };
 

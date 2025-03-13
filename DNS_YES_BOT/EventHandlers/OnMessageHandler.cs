@@ -128,7 +128,7 @@ namespace DNS_YES_BOT.EventHandlers
 
         private async Task StartNewVote(Message msg)
         {
-            if (await _voteService.CheckEntity(msg.Chat.Id))
+            if (await _voteService.CheckEntity(msg.MessageThreadId ?? msg.Chat.Id))
             {
                 await SendMessageToChannel(msg, "Голосование в этом чате уже было проведено");
                 return;

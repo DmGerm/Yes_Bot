@@ -16,43 +16,28 @@ namespace DNS_YES_BOT.EventHandlers
         private readonly IVoteService _voteService = voteService;
         private readonly IAdminRepo _userRepo = adminRepo;
         private readonly IRouteData _routeData = routeData;
+        private readonly VoteManager _votemanager = new VoteManager(voteService, telegramBotClient, shopRepo, adminRepo);
 
         public async Task OnMessage(Message msg, UpdateType type)
         {
-            if (msg.From is null || msg.Text is null)
-            {
-                return;
-            }
+            if (msg.From is null || msg.Text is null) return;
+
             var command = msg.Text.Split('@')[0];
 
-            if (command == "/start")
+            var commands = new Dictionary<string, Func<Task>>
             {
-                await StartNewVote(msg);
-            }
+                ["/start"] = () => Task.Run(() => _votemanager.StartVoteAsync(msg)),
+                ["/results"] = () => ShowVoteResults(msg),
+                ["/add_admin"] = () => HandleAddAdmin(msg),
+                ["/admin_service"] = () => ShowAdminPanel(msg),
+                ["/show_admins"] = () => ShowAdmins(msg),
+                ["/cancel_vote"] = () => _votemanager.EndVoteAsync(msg.Chat.Id),
+                ["/help"] = () => ShowHelp(msg)
+            };
 
-            if (command == "/results")
+            if (commands.TryGetValue(command, out var action))
             {
-                await ShowVoteResults(msg);
-            }
-
-            if (command == "/add_admin")
-            {
-                await HandleAddAdmin(msg);
-            }
-
-            if (command == "/admin_service")
-            {
-                await ShowAdminPanel(msg);
-            }
-
-            if (command == "/show_admins")
-            {
-                await ShowAdmins(msg);
-            }
-
-            if (command == "/help")
-            {
-                await ShowHelp(msg);
+                await action();
             }
         }
 
@@ -131,28 +116,6 @@ namespace DNS_YES_BOT.EventHandlers
                 ]
                                ]));
             }
-        }
-
-        private async Task StartNewVote(Message msg)
-        {
-            if (await _voteService.CheckEntity(msg.MessageThreadId ?? msg.Chat.Id))
-            {
-                await SendMessageToChannel(msg, "Голосование в этом чате уже было проведено");
-                return;
-            }
-
-            var shops = await _shopRepo.GetShopsAsync();
-
-            var buttons = shops
-                .Select(shop => InlineKeyboardButton.WithCallbackData(
-                    shop.ShopName,
-                    $"vote_{shop.ShopName}"))
-                .Select((button, index) => new { button, index })
-                .GroupBy(x => x.index / 2)
-                .Select(group => group.Select(x => x.button).ToList())
-                .ToList();
-            var inlineKeyboard = new InlineKeyboardMarkup(buttons);
-            await SendMessageToChannelWithReplyMarkup(msg, "Нажмите кнопку вашего магазина, чтобы подтвердить ознакомление с информацией:", inlineKeyboard);
         }
 
         private async Task ShowVoteResults(Message msg)

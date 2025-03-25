@@ -104,10 +104,11 @@ namespace DNS_YES_BOT.BotService
                   {
                  new() { Command = "admin_service", Description = "Панель управления" },
                  new() { Command = "show_admins", Description = "Посмотреть добавленных администраторов"},
+                 new() {Command = "vote_cancel"}, Description = "Досрочно завершить голосование в чате" },
                  new() { Command = "help", Description = "Получить помощь" },
                   };
 
-            var groupCommands = new List<BotCommand>
+        var groupCommands = new List<BotCommand>
                   {
                       new() { Command = "start", Description = "Начать голосование" },
                       new() { Command = "results", Description = "Посмотреть результаты голосования" },
@@ -130,7 +131,7 @@ namespace DNS_YES_BOT.BotService
             catch (Exception ex)
             {
                 throw new InvalidOperationException("Failed to set bot commands", ex);
-            }
+}
         }
     }
 }

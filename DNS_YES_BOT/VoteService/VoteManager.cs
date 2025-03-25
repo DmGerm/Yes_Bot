@@ -55,15 +55,18 @@ namespace DNS_YES_BOT.VoteService
             var cts = new CancellationTokenSource();
             _activeVotes[chatId] = cts;
 
-            try
+            _ = Task.Run(async () =>
             {
-                await Task.Delay(TimeSpan.FromHours(24), cts.Token);
-                await EndVoteAsync(msg);
-            }
-            catch (TaskCanceledException)
-            {
-                await SendMessageToChannel(msg, "Голосование было отменено.");
-            }
+                try
+                {
+                    await Task.Delay(TimeSpan.FromHours(24), cts.Token);
+                    await EndVoteAsync(msg);
+                }
+                catch (TaskCanceledException)
+                {
+                    await SendMessageToChannel(msg, "Голосование было отменено.");
+                }
+            });
         }
 
         public async Task EndVoteAsync(Message msg)

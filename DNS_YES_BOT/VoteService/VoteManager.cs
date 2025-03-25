@@ -18,7 +18,7 @@ namespace DNS_YES_BOT.VoteService
         {
             var chatId = msg.Chat.Id;
 
-            if (msg.From is not null && await adminRepo.UserIdExistsAsync(msg.From.Id))
+            if (msg.From is not null && !await adminRepo.UserIdExistsAsync(msg.From.Id))
             {
                 await SendMessageToChannel(msg, "⚠️ Вы не являетесь администратором!");
                 return;

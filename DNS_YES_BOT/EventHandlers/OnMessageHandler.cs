@@ -31,7 +31,7 @@ namespace DNS_YES_BOT.EventHandlers
                 ["/add_admin"] = () => HandleAddAdmin(msg),
                 ["/admin_service"] = () => ShowAdminPanel(msg),
                 ["/show_admins"] = () => ShowAdmins(msg),
-                ["/cancel_vote"] = () => _votemanager.EndVoteAsync(msg.Chat.Id),
+                ["/cancel_vote"] = () => _votemanager.EndVoteAsync(msg),
                 ["/help"] = () => ShowHelp(msg)
             };
 

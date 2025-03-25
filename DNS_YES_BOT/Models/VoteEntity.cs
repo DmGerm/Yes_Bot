@@ -2,6 +2,7 @@
 {
     public class VoteEntity
     {
+        public Guid EntityToken { get; set; }
         public DateTime? Date { get; set; } = DateTime.Now;
         public Dictionary<string, List<string>> VoteResults { get; set; } = [];
         public void AddResult(string shopName, string value)

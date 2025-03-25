@@ -13,10 +13,19 @@ namespace DNS_YES_BOT.VoteService
         private readonly Dictionary<long, CancellationTokenSource> _activeVotes = [];
         private readonly IShopRepo _shopRepo = shopRepo;
         private readonly IAdminRepo adminRepo = adminRepo;
+        long chatId;
 
         public async Task StartVoteAsync(Message msg)
         {
-            var chatId = msg.Chat.Id;
+            if (msg.Chat.Type is Telegram.Bot.Types.Enums.ChatType.Group)
+            {
+                chatId = msg.Chat.Id;
+            }
+
+            if (msg.Chat.Type is Telegram.Bot.Types.Enums.ChatType.Supergroup)
+            {
+                chatId = (long)msg.MessageThreadId;
+            }
 
             if (msg.From is not null && !await adminRepo.UserIdExistsAsync(msg.From.Id))
             {
@@ -54,31 +63,8 @@ namespace DNS_YES_BOT.VoteService
             await SendMessageToChannelWithReplyMarkup(msg, "🗳 Нажмите кнопку вашего магазина, чтобы подтвердить ознакомление с информацией. Голосование продлится 24 часа:", inlineKeyboard);
             var cts = new CancellationTokenSource();
             _activeVotes[chatId] = cts;
-
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await Task.Delay(TimeSpan.FromHours(24), cts.Token);
-                    await EndVoteAsync(msg);
-                }
-                catch (TaskCanceledException)
-                {
-                    await SendMessageToChannel(msg, "Голосование было отменено.");
-                }
-            });
         }
 
-        public async Task EndVoteAsync(Message msg)
-        {
-            if (!_activeVotes.ContainsKey(msg.Chat.Id)) return;
-
-            _activeVotes[msg.Chat.Id].Cancel();
-            _activeVotes.Remove(msg.Chat.Id);
-
-            var results = await _voteService.GetResultsAsync(msg.Chat.Id);
-            await SendMessageToChannel(msg, $"Голосование завершено!");
-        }
 
 
         private async Task SendMessageToChannel(Message msg, string messageText)

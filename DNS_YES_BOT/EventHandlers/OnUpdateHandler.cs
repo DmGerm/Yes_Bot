@@ -64,6 +64,8 @@ namespace DNS_YES_BOT.EventHandlers
             if (parts.Length < 2)
                 throw new Exception("Invalid callback data format");
 
+            await _botClient.AnswerCallbackQuery(query.Id, "Голос принят!");
+
             var shopName = parts[1];
 
             long threadId = query.Message.MessageThreadId ?? query.Message.Chat.Id;

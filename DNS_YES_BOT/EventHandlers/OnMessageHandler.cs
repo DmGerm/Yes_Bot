@@ -26,12 +26,11 @@ namespace DNS_YES_BOT.EventHandlers
 
             var commands = new Dictionary<string, Func<Task>>
             {
-                ["/start"] = () => Task.Run(() => _votemanager.StartVoteAsync(msg)),
+                ["/start"] = () => _votemanager.StartVoteAsync(msg),
                 ["/results"] = () => ShowVoteResults(msg),
                 ["/add_admin"] = () => HandleAddAdmin(msg),
                 ["/admin_service"] = () => ShowAdminPanel(msg),
                 ["/show_admins"] = () => ShowAdmins(msg),
-                ["/cancel_vote"] = () => _votemanager.EndVoteAsync(msg),
                 ["/help"] = () => ShowHelp(msg)
             };
 

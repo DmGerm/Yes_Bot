@@ -1,6 +1,5 @@
 ﻿using Interface.Models;
 using Interface.VoteStorage;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Interface_dev.Controllers
@@ -23,6 +22,16 @@ namespace Interface_dev.Controllers
             return Ok(voteResultLink);
         }
 
+        [HttpPost("vote_by_token")]
+        public IActionResult PostVoteByToken([FromBody] VoteEntity vote)
+        {
+            if (!_voteService.PostVoteByTokenAsync(vote))
+            {
+                return NotFound("Vote or token can't be found");
+            }
+            return Ok();
+        }
+
         [HttpPost("shop_sync")]
         public IActionResult SyncShopList([FromBody] List<string> shops)
         {
@@ -37,12 +46,12 @@ namespace Interface_dev.Controllers
             return Ok("Shops synced successfully.");
         }
 
-/*        [HttpGet("csrf-token")]
-        public IActionResult GetCsrfToken()
-        {
-            var antiforgery = HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
-            var tokens = antiforgery.GetAndStoreTokens(HttpContext);
-            return Ok(new { token = tokens.RequestToken });
-        }*/
+        /*        [HttpGet("csrf-token")]
+                public IActionResult GetCsrfToken()
+                {
+                    var antiforgery = HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+                    var tokens = antiforgery.GetAndStoreTokens(HttpContext);
+                    return Ok(new { token = tokens.RequestToken });
+                }*/
     }
 }

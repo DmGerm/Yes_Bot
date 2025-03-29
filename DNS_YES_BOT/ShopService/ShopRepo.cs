@@ -6,14 +6,14 @@ using System.Text.Json.Serialization;
 
 namespace DNS_YES_BOT.ShopService
 {
-    public class ShopRepo() : IShopRepo
+    public class ShopRepo : IShopRepo
     {
         private readonly HttpClient _httpClient = new();
-        private readonly List<Shop> _shops = [];
+        private readonly List<Shop> _shops = new();
         private readonly IRouteData? _routeData;
-        public ShopRepo(IRouteData routeData) : this()
+        public ShopRepo(IRouteData routeData)
         {
-            _routeData = routeData;
+            _routeData = routeData ?? throw new ArgumentNullException(nameof(routeData));
             try
             {
                 LoadShopList();
@@ -33,7 +33,10 @@ namespace DNS_YES_BOT.ShopService
             try
             {
                 SaveShopsList();
-                await _routeData.SendDataOnceAsync(await GetShopNamesAsync());
+                if (_routeData != null)
+                {
+                    await _routeData.SendDataOnceAsync(await GetShopNamesAsync());
+                }
                 if (_shops.Count != 0)
                     SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
             }
@@ -56,7 +59,10 @@ namespace DNS_YES_BOT.ShopService
             try
             {
                 SaveShopsList();
-                await _routeData.SendDataOnceAsync(await GetShopNamesAsync());
+                if (_routeData != null)
+                {
+                    await _routeData.SendDataOnceAsync(await GetShopNamesAsync());
+                }
                 if (_shops.Count != 0)
                     SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
             }

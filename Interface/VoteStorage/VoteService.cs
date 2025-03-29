@@ -46,5 +46,25 @@ namespace Interface.VoteStorage
                 throw;
             }
         }
+
+        public bool PostVoteByTokenAsync(VoteEntity vote)
+        {
+            if (vote.EntityToken == null)
+                throw new ArgumentNullException(nameof(vote.EntityToken));
+
+            bool result = true;
+            foreach (var token in vote.EntityToken)
+            {
+                if (!_voteSessions.TryGetValue(token.ToString(), out var voteEntity))
+                {
+                    result = false;
+                }
+                else
+                {
+                    _voteSessions[token.ToString()] = vote;
+                }
+            }
+            return result;
+        }
     }
 }

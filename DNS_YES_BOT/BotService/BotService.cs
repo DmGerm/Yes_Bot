@@ -20,13 +20,20 @@ namespace DNS_YES_BOT.BotService
         public async Task BotRun()
         {
             using var cts = new CancellationTokenSource();
-            _routeData = new RouteData(cts.Token);
+            _routeData = new RouteData(cts.Token, (VoteServiceRe)_voteService);
             _shopRepo = new ShopRepo(_routeData);
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
+
             var sendDataTask = Task.Run(async () =>
             {
                 await Task.Delay(30000);
                 await _routeData.SendDataOnceAsync(await _shopRepo.GetShopNamesAsync());
+            });
+
+            _ = Task.Run(async () =>
+            {
+                await _routeData.DataUpdateAsync();
+                await Task.Delay(30000);
             });
 
             AssemblyLoadContext.Default.Unloading += ctx =>

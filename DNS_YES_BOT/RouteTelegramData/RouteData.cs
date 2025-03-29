@@ -1,14 +1,17 @@
 ﻿using DNS_YES_BOT.Models;
+using DNS_YES_BOT.VoteService;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace DNS_YES_BOT.RouteTelegramData
 {
-    public class RouteData(CancellationToken cancellationToken) : IRouteData
+
+    public class RouteData(CancellationToken cancellationToken, VoteServiceRe voteService) : IRouteData
     {
         private readonly HttpClient _httpClient = new HttpClient();
         private bool disposedValue;
+        private readonly VoteServiceRe? _voteService = voteService;
         /*        private string? _csrfToken;
         */
         public async Task SendDataOnceAsync(List<string> shopList)
@@ -65,16 +68,7 @@ namespace DNS_YES_BOT.RouteTelegramData
                                     await GetCsrfTokenAsync();
                                 }*/
 
-                var json = JsonSerializer.Serialize(voteEntity);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                /*                if (!string.IsNullOrEmpty(_csrfToken))
-                                {
-                                    _httpClient.DefaultRequestHeaders.Remove("RequestVerificationToken");
-                                    _httpClient.DefaultRequestHeaders.Add("RequestVerificationToken", _csrfToken);
-                                }
-                */
-                var response = await _httpClient.PostAsync("http://interface:7030/api/vote/vote_link", content);
+                HttpResponseMessage response = await PostVoteAsync(voteEntity);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -85,9 +79,19 @@ namespace DNS_YES_BOT.RouteTelegramData
                 string pattern = @"[^/] +(?=/$|$)";
 
                 Match match = Regex.Match(link, pattern);
+                Guid token = Guid.Parse(match.Value);
+
+                if (voteEntity.EntityToken is null)
+                    voteEntity.EntityToken = [];
 
                 if (match.Success)
-                    voteEntity.EntityToken = Guid.Parse(match.Value);
+                    voteEntity.EntityToken.Add(token);
+
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(30));
+                    voteEntity.EntityToken.RemoveAll(x => x == token);
+                });
 
                 return link;
             }
@@ -96,27 +100,37 @@ namespace DNS_YES_BOT.RouteTelegramData
                 throw new Exception($"Error retrieving vote URL: {ex.Message}");
             }
         }
+
+        private async Task<HttpResponseMessage> PostVoteAsync(VoteEntity voteEntity)
+        {
+            var json = JsonSerializer.Serialize(voteEntity);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("http://interface:7030/api/vote/vote_link", content);
+            return response;
+        }
+
         /*        public async Task<string> GetCsrfTokenAsync()
-                {
-                    try
-                    {
-                        var response = await _httpClient.GetAsync("http://interface:7030/api/vote/csrf-token", cancellationToken);
+       {
+           try
+           {
+               var response = await _httpClient.GetAsync("http://interface:7030/api/vote/csrf-token", cancellationToken);
 
-                        if (response.IsSuccessStatusCode)
-                        {
-                            var responseBody = await response.Content.ReadAsStringAsync();
-                            var tokenResponse = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
-                            _csrfToken = tokenResponse?["token"];
-                            return _csrfToken ?? throw new Exception("Token not found in response.");
-                        }
+               if (response.IsSuccessStatusCode)
+               {
+                   var responseBody = await response.Content.ReadAsStringAsync();
+                   var tokenResponse = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
+                   _csrfToken = tokenResponse?["token"];
+                   return _csrfToken ?? throw new Exception("Token not found in response.");
+               }
 
-                        throw new Exception($"Failed to retrieve CSRF token. Status code: {response.StatusCode}");
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception($"Error retrieving CSRF token: {ex.Message}");
-                    }
-                }*/
+               throw new Exception($"Failed to retrieve CSRF token. Status code: {response.StatusCode}");
+           }
+           catch (Exception ex)
+           {
+               throw new Exception($"Error retrieving CSRF token: {ex.Message}");
+           }
+       }*/
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -145,6 +159,29 @@ namespace DNS_YES_BOT.RouteTelegramData
             // Не изменяйте этот код. Разместите код очистки в методе "Dispose(bool disposing)".
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public Task DataUpdateAsync()
+        {
+            while (cancellationToken.IsCancellationRequested)
+            {
+                if (_voteService != null && _voteService._votes.Count != 0)
+                {
+                    Task.Run(() =>
+                    {
+                        var votes = _voteService._votes.Values.ToList();
+                        var jsonList = votes.Select(voteEntity => JsonSerializer.Serialize(voteEntity));
+                        var content = jsonList.Select(json => new StringContent(json, Encoding.UTF8, "application/json"));
+
+
+                        content.Select(async content =>
+                        {
+                            await _httpClient.PostAsync("http://interface:7030/api/vote/vote_by_token", content);
+                        });
+                    });
+                }
+            }
+            return Task.CompletedTask;
         }
     }
 }

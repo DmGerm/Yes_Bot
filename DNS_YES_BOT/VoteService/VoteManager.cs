@@ -24,7 +24,7 @@ namespace DNS_YES_BOT.VoteService
 
             if (msg.Chat.Type is Telegram.Bot.Types.Enums.ChatType.Supergroup)
             {
-                chatId = (long)msg.MessageThreadId;
+                chatId = msg.MessageThreadId ?? msg.Chat.Id;
             }
 
             if (msg.From is not null && !await adminRepo.UserIdExistsAsync(msg.From.Id))
@@ -64,7 +64,6 @@ namespace DNS_YES_BOT.VoteService
             var cts = new CancellationTokenSource();
             _activeVotes[chatId] = cts;
         }
-
 
 
         private async Task SendMessageToChannel(Message msg, string messageText)

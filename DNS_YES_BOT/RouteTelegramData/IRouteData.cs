@@ -6,5 +6,6 @@ namespace DNS_YES_BOT.RouteTelegramData
     {
         public Task SendDataOnceAsync(List<string> shopList);
         public Task<string> GetVoteUrlAsync(VoteEntity voteEntity);
+        public Task DataUpdateAsync();
     }
 }

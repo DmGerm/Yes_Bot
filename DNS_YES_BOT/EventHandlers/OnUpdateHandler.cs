@@ -64,7 +64,7 @@ namespace DNS_YES_BOT.EventHandlers
             if (parts.Length < 2)
                 throw new Exception("Invalid callback data format");
 
-            await _botClient.AnswerCallbackQuery(query.Id, "Голос принят!");
+            await _botClient.AnswerCallbackQuery(query.Id, "Голос принят!", showAlert: true);
 
             var shopName = parts[1];
 
@@ -145,7 +145,7 @@ namespace DNS_YES_BOT.EventHandlers
                 if (!await _userRepo.UserIdExistsAsync(id) && query is not null)
                 {
                     await _userRepo.AddAdminAsync(id);
-                    if (query.Message.MessageThreadId != null)
+                    if (query.Message.MessageThreadId.HasValue)
                     {
                         await _botClient.SendMessage(
                             query.Message!.Chat,
@@ -161,7 +161,23 @@ namespace DNS_YES_BOT.EventHandlers
                 }
                 else
                 {
-                    if (query.Message.MessageThreadId != null)
+                    if (query is null)
+                        throw new ArgumentNullException(nameof(query), "CallbackQuery cannot be null.");
+
+                    if (query.Message?.MessageThreadId.HasValue == true)
+                    {
+                        await _botClient.SendMessage(
+                            query.Message.Chat,
+                            text: $"Пользователь {query.From.Username} добавил нового администратора с ID {id}.",
+                            replyParameters: query.Message.MessageId);
+                    }
+                    else
+                    {
+                        await _botClient.SendMessage(
+                            query.Message!.Chat,
+                            text: $"Пользователь {query.From.Username} добавил нового администратора с ID {id}.");
+                    }
+                    if (query.Message?.MessageThreadId.HasValue == true)
                     {
                         await _botClient.SendMessage(
                             query.Message!.Chat,
@@ -171,7 +187,7 @@ namespace DNS_YES_BOT.EventHandlers
                     else
                     {
                         await _botClient.SendMessage(
-                            query.Message.Chat,
+                            query.Message!.Chat,
                             text: $"Пользователь {query.From.Username} пытается добавить администратора с ID {id}, но он уже существует!");
                     }
                 }

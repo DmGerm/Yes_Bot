@@ -6,7 +6,7 @@ namespace DNS_YES_BOT.VoteService
 {
     public class VoteServiceRe : IVoteService
     {
-        private Dictionary<long, VoteEntity> _votes = [];
+        public Dictionary<long, VoteEntity> _votes { get; set; } = [];
 
         public VoteServiceRe()
         {

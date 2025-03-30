@@ -24,12 +24,6 @@ namespace DNS_YES_BOT.BotService
             _shopRepo = new ShopRepo(_routeData);
             var bot = new TelegramBotClient(_botToken, cancellationToken: cts.Token);
 
-            var sendDataTask = Task.Run(async () =>
-            {
-                await Task.Delay(30000);
-                await _routeData.SendDataOnceAsync(await _shopRepo.GetShopNamesAsync());
-            });
-
             _ = Task.Run(async () =>
             {
                 await _routeData.DataUpdateAsync(cts.Token);

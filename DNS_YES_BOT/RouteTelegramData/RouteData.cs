@@ -182,7 +182,7 @@ namespace DNS_YES_BOT.RouteTelegramData
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
 
                 if (_voteService._votes.Count != 0)
                 {

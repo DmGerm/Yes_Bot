@@ -18,7 +18,14 @@ namespace DNS_YES_BOT.ShopService
             {
                 LoadShopList();
                 if (_shops.Count != 0)
-                    SendShopToController(_shops.Select(x => x.ShopName).ToList()).GetAwaiter().GetResult();
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(20));
+                        await _routeData.SendDataOnceAsync(await GetShopNamesAsync());
+                    });
+
+                }
             }
             catch (Exception ex)
             {
@@ -116,7 +123,7 @@ namespace DNS_YES_BOT.ShopService
         {
             var json = JsonSerializer.Serialize(shops);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("https://localhost:7003/api/Vote/shop_sync", content);
+            var response = await _httpClient.PostAsync("https://interface:7003/api/Vote/shop_sync", content);
 
             if (!response.IsSuccessStatusCode)
             {

@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  dns_yes_bot:
+    build:
+      context: ./DNS_YES_BOT/
+      dockerfile: Dockerfile
+    volumes:
+      - /home/seltis/Projects/DNS_YES_BOT/data:/app/data
+    environment:
+      TELEGRAM_BOT_TOKEN: "7604420018:AAH2SlKhFP78Neg0F86qGV1ARk_19dzRpac"
+      UID: ${UID:-1000}
+      GID: ${GID:-1000}
+    user: "${UID}:${GID}"
+    networks:
+      - dns_net
+    restart: unless-stopped
+  
+  interface:
+    build:
+      context: ./Interface/
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:7030
+      - ASPNETCORE_ENVIRONMENT=Production
+      - UID=${UID:-1000}
+      - GID=${GID:-1000}
+    user: "${UID}:${GID}"
+    volumes:
+      - shared_keys:/app/keys
+    ports:
+      - "7030:7030"
+    networks:
+      - dns_net
+    restart: unless-stopped
+
+networks:
+  dns_net:
+    driver: bridge
+
+volumes:
+  shared_keys: {}

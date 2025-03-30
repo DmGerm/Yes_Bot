@@ -1,17 +1,14 @@
-version: '3.9'
-
 services:
   dns_yes_bot:
     build:
       context: ./DNS_YES_BOT/
       dockerfile: Dockerfile
     volumes:
-      - /home/seltis/Projects/DNS_YES_BOT/data:/app/data
+      - dns_data:/app/data
     environment:
-      environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      UID: ${UID:-1000}
-      GID: ${GID:-1000}
+      - UID=${UID:-1000}
+      - GID=${GID:-1000}
     user: "${UID}:${GID}"
     networks:
       - dns_net
@@ -40,4 +37,5 @@ networks:
     driver: bridge
 
 volumes:
+  dns_data: {}
   shared_keys: {}

@@ -13,8 +13,8 @@ WORKDIR /src
 COPY ["./Interface.csproj", "Interface/"]
 RUN dotnet restore "./Interface/Interface.csproj"
 COPY . .
-WORKDIR "/src"
-RUN dotnet build "./Interface.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/"
+RUN dotnet build "Interface.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish

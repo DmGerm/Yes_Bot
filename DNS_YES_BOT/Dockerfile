@@ -29,4 +29,9 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 VOLUME ["/app/data"] 
 
+# Копируем файл token.env в контейнер
+COPY token.env /app/token.env  # Добавляем файл token.env в контейнер
+
+VOLUME ["/app/data"] 
+
 ENTRYPOINT ["dotnet", "DNS_YES_BOT.dll"]

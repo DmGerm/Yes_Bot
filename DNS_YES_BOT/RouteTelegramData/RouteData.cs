@@ -63,11 +63,6 @@ namespace DNS_YES_BOT.RouteTelegramData
 
             try
             {
-                /*                if (string.IsNullOrEmpty(_csrfToken))
-                                {
-                                    await GetCsrfTokenAsync();
-                                }*/
-
                 HttpResponseMessage response = await PostVoteAsync(voteEntity);
 
                 if (!response.IsSuccessStatusCode)
@@ -76,28 +71,36 @@ namespace DNS_YES_BOT.RouteTelegramData
                 }
 
                 var link = await response.Content.ReadAsStringAsync();
-                string pattern = @"[^/] +(?=/$|$)";
+                string pattern = @"[0-9a-fA-F\-]{36}";
 
                 Match match = Regex.Match(link, pattern);
-                Guid token = Guid.Parse(match.Value);
-
-                if (voteEntity.EntityToken is null)
-                    voteEntity.EntityToken = [];
 
                 if (match.Success)
+                {
+                    Guid token = Guid.Parse(match.Value);
+
+                    if (voteEntity.EntityToken is null)
+                        voteEntity.EntityToken = new List<Guid>();
+
                     voteEntity.EntityToken.Add(token);
 
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(TimeSpan.FromMinutes(30));
-                    voteEntity.EntityToken.RemoveAll(x => x == token);
-                });
+                    _ = Task.Run(async () =>
+                    {
+                        await Task.Delay(TimeSpan.FromHours(24));
+                        lock (voteEntity.EntityToken)
+                        {
+                            voteEntity.EntityToken.RemoveAll(x => x == token);
+                        }
+                    });
 
-                return link;
+                    return link;
+                }
+
+                throw new Exception("Failed to parse token from the response.");
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error retrieving vote URL: {ex.Message}");
+                throw new Exception($"Error retrieving vote URL: {ex.Message}", ex);
             }
         }
 
@@ -161,27 +164,70 @@ namespace DNS_YES_BOT.RouteTelegramData
             GC.SuppressFinalize(this);
         }
 
-        public Task DataUpdateAsync()
+        public Task DataUpdateAsync(CancellationToken cancellationToken)
         {
-            while (cancellationToken.IsCancellationRequested)
+            return DataUpdateAsync(_voteService, cancellationToken);
+        }
+
+        public async Task DataUpdateAsync(VoteServiceRe? _voteService, CancellationToken cancellationToken)
+        {
+            if (_voteService == null)
             {
-                if (_voteService != null && _voteService._votes.Count != 0)
+                throw new ArgumentNullException(nameof(_voteService));
+            }
+
+            _voteService._votes.Values
+                .ToList()
+                .ForEach(voteEntity => voteEntity.EntityToken = new List<Guid>());
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+
+                if (_voteService._votes.Count != 0)
                 {
-                    Task.Run(() =>
+                    var votes = _voteService._votes.Values.ToList();
+
+                    var jsonList = votes
+                        .Where(voteEntity => voteEntity.EntityToken != null && voteEntity.EntityToken.Count != 0)
+                        .Select(voteEntity => JsonSerializer.Serialize(voteEntity))
+                        .ToList();
+
+                    var contentList = jsonList
+                        .Select(json => new StringContent(json, Encoding.UTF8, "application/json"))
+                        .ToList();
+
+                    var tasks = contentList.Select(async content =>
                     {
-                        var votes = _voteService._votes.Values.ToList();
-                        var jsonList = votes.Select(voteEntity => JsonSerializer.Serialize(voteEntity));
-                        var content = jsonList.Select(json => new StringContent(json, Encoding.UTF8, "application/json"));
-
-
-                        content.Select(async content =>
+                        try
                         {
-                            await _httpClient.PostAsync("http://interface:7030/api/vote/vote_by_token", content);
-                        });
+                            var response = await _httpClient.PostAsync("http://interface:7030/api/vote/vote_by_token", content, cancellationToken);
+
+                            if (!response.IsSuccessStatusCode)
+                            {
+                                Console.WriteLine($"Error posting vote data. Status code: {response.StatusCode}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Exception while sending request: {ex.Message}");
+                        }
+                        finally
+                        {
+                            content.Dispose();
+                        }
                     });
+
+                    try
+                    {
+                        await Task.WhenAll(tasks);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Console.WriteLine("Operation cancelled.");
+                    }
                 }
             }
-            return Task.CompletedTask;
         }
     }
 }

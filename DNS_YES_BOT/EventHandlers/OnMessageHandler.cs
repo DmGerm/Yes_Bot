@@ -138,7 +138,7 @@ namespace DNS_YES_BOT.EventHandlers
                 if (votedShops.Count == shopNames.Count)
                     await SendMessageToChannel(msg, $"Все магазины проголосовали!");
 
-                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра</a>", ParseMode.Html);
+                await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра (ссылка действительна 24 часа)</a>", ParseMode.Html);
             }
             catch
             {

@@ -7,7 +7,7 @@ namespace Interface.VoteStorage
     {
         private List<string> _shops = [];
         private readonly ConcurrentDictionary<string, VoteEntity> _voteSessions = new();
-        private readonly TimeSpan _linkExpiryTime = TimeSpan.FromMinutes(30);
+        private readonly TimeSpan _linkExpiryTime = TimeSpan.FromHours(24);
 
         public string GetPageUrl(VoteEntity voteEntity)
         {

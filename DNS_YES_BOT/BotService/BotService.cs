@@ -32,8 +32,7 @@ namespace DNS_YES_BOT.BotService
 
             _ = Task.Run(async () =>
             {
-                await _routeData.DataUpdateAsync();
-                await Task.Delay(30000);
+                await _routeData.DataUpdateAsync(cts.Token);
             });
 
             AssemblyLoadContext.Default.Unloading += ctx =>

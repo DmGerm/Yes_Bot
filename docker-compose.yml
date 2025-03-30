@@ -8,7 +8,7 @@ services:
     volumes:
       - /home/seltis/Projects/DNS_YES_BOT/data:/app/data
     environment:
-      TELEGRAM_BOT_TOKEN: "7604420018:AAH2SlKhFP78Neg0F86qGV1ARk_19dzRpac"
+      TELEGRAM_BOT_TOKEN: ""
       UID: ${UID:-1000}
       GID: ${GID:-1000}
     user: "${UID}:${GID}"

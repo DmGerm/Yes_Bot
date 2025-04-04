@@ -11,17 +11,26 @@ internal class Program
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
         IConfiguration configuration = builder.Build();
 
-        var stringFromEnv = File.ReadAllText("token.env");
-        string pattern = @"^(?:\w+)=([\w:]+)$";
-        if (!Regex.IsMatch(stringFromEnv, pattern))
+        var botToken = Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN");
+
+        if (string.IsNullOrEmpty(botToken))
         {
-            throw new InvalidOperationException("Invalid token.env file format.");
+            var stringFromEnv = await File.ReadAllTextAsync("token.env");
+            string pattern = @"^(?:\w+)=([\w:]+)$";
+
+            if (!Regex.IsMatch(stringFromEnv, pattern))
+            {
+                throw new InvalidOperationException("Invalid token.env file format.");
+            }
+
+            botToken = Regex.Match(stringFromEnv, pattern).Groups[1].Value;
         }
-        var token = Regex.Match(stringFromEnv, pattern).Groups[1].Value;
-        Console.WriteLine(token);
-        var botToken = Environment.GetEnvironmentVariable("TELEGRAM_BOT_TOKEN")
-                                        ?? token
-                                        ?? throw new InvalidOperationException("Bot token is not provided!");
+
+        if (string.IsNullOrEmpty(botToken))
+        {
+            throw new InvalidOperationException("Bot token is not provided!");
+        }
+
 
         BotService botService = new(botToken);
         await botService.BotRun();

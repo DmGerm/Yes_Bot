@@ -122,6 +122,8 @@ namespace DNS_YES_BOT.EventHandlers
             if (msg is null || msg.From is null)
                 throw new Exception("Message or From is null");
 
+            await _botClient.DeleteMessage(msg.Chat.Id, msg.MessageId);
+
             if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
             {
                 await SendMessageToChannel(msg, "Вы не являетесь администратором!");
@@ -136,7 +138,7 @@ namespace DNS_YES_BOT.EventHandlers
             try
             {
                 if (votedShops.Count == shopNames.Count)
-                    await SendMessageToChannel(msg, $"Все магазины проголосовали!");
+                    await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра (ссылка действительна 24 часа)</a>", ParseMode.Html);
 
                 await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра (ссылка действительна 24 часа)</a>", ParseMode.Html);
             }

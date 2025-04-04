@@ -17,6 +17,7 @@ namespace DNS_YES_BOT.VoteService
 
         public async Task StartVoteAsync(Message msg)
         {
+
             if (msg.Chat.Type is Telegram.Bot.Types.Enums.ChatType.Group)
             {
                 chatId = msg.Chat.Id;
@@ -26,6 +27,8 @@ namespace DNS_YES_BOT.VoteService
             {
                 chatId = msg.MessageThreadId ?? msg.Chat.Id;
             }
+
+            _botClient.DeleteMessage(msg.Chat.Id, msg.MessageId).Wait();
 
             if (msg.From is not null && !await adminRepo.UserIdExistsAsync(msg.From.Id))
             {

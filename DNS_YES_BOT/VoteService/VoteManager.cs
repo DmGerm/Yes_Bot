@@ -28,8 +28,6 @@ namespace DNS_YES_BOT.VoteService
                 chatId = msg.MessageThreadId ?? msg.Chat.Id;
             }
 
-            _botClient.DeleteMessage(msg.Chat.Id, msg.MessageId).Wait();
-
             if (msg.From is not null && !await adminRepo.UserIdExistsAsync(msg.From.Id))
             {
                 await SendMessageToChannel(msg, "⚠️ Вы не являетесь администратором!");
@@ -96,13 +94,17 @@ namespace DNS_YES_BOT.VoteService
                     text: messageText,
                     replyParameters: msg.MessageId,
                     replyMarkup: inlineKeyboard);
+
+
             }
             else
             {
                 await _botClient.SendMessage(
                     chatId: msg.Chat.Id,
                     text: messageText, replyMarkup: inlineKeyboard);
+
             }
+
         }
     }
 }

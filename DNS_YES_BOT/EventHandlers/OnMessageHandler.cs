@@ -122,7 +122,6 @@ namespace DNS_YES_BOT.EventHandlers
             if (msg is null || msg.From is null)
                 throw new Exception("Message or From is null");
 
-            await _botClient.DeleteMessage(msg.Chat.Id, msg.MessageId);
 
             if (!await _userRepo.UserIdExistsAsync(msg.From.Id))
             {
@@ -135,10 +134,11 @@ namespace DNS_YES_BOT.EventHandlers
             var shopNames = shops.Select(shop => shop.ShopName).ToList();
             var votedShops = results.VoteResults.Where(x => shopNames.Contains(x.Key)).Select(x => x.Key).ToList();
             var url = await _routeData.GetVoteUrlAsync(results);
+
             try
             {
                 if (votedShops.Count == shopNames.Count)
-                    await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра (ссылка действительна 24 часа)</a>", ParseMode.Html);
+                    await _botClient.SendMessage(msg.From.Id, $"Все магазины проголосовали");
 
                 await _botClient.SendMessage(msg.From.Id, $"Результаты голосования:\n<a href=\"{url}/\">Нажмите для просмотра (ссылка действительна 24 часа)</a>", ParseMode.Html);
             }
@@ -148,6 +148,15 @@ namespace DNS_YES_BOT.EventHandlers
                 var button = InlineKeyboardButton.WithUrl("Написать боту", $"https://t.me/{me.Username}");
                 var inlineKeyboard = new InlineKeyboardMarkup(button);
                 await SendMessageToChannelWithReplyMarkup(msg, "Команда доступна после старта личного диалога с ботом.", inlineKeyboard);
+            }
+
+            try
+            {
+                await _botClient.DeleteMessage(msg.Chat.Id, msg.MessageId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting message: {ex.Message}");
             }
         }
 

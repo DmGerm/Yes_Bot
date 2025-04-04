@@ -48,7 +48,8 @@
         return;
       }
       const instanceMap = elementMap.get(element);
-      instanceMap.delete(key);
+      instanceMap.
+      (key);
 
       // free up element references if there are no instances left for an element
       if (instanceMap.size === 0) {

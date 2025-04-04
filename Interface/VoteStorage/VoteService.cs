@@ -1,6 +1,5 @@
 ﻿using Interface.Models;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using System.Collections.Concurrent;
 
 namespace Interface.VoteStorage
@@ -74,14 +73,11 @@ namespace Interface.VoteStorage
 
         private string GetServerAddress()
         {
-            var addresses = _server.Features.Get<IServerAddressesFeature>()?.Addresses;
+            // Получаем домен из переменной окружения или конфигурации
+            var domain = Environment.GetEnvironmentVariable("DOMAIN_NAME") ?? "localhost";
+            var port = Environment.GetEnvironmentVariable("PORT_NAMBER") ?? "8080";
 
-            if (addresses == null || !addresses.Any())
-                return "http://localhost:5000";
-
-            var address = addresses.FirstOrDefault(a => a.StartsWith("http://")) ?? addresses.First();
-
-            return address.TrimEnd('/');
+            return $"http://{domain}:{port}";
         }
 
     }

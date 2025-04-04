@@ -12,8 +12,6 @@ namespace Interface
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.WebHost.UseUrls(builder.Configuration["ASPNETCORE_URLS"] ?? "http://*:80");
-
             builder.Services.AddDataProtection()
                             .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"));
 

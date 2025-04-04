@@ -19,7 +19,8 @@ services:
       context: ./Interface/
       dockerfile: Dockerfile
     environment:
-      - ASPNETCORE_URLS=http://+:7030
+      - DOMAIN_NAME=dmgerm.ddns.net
+      - PORT_NUMBER=7030
       - ASPNETCORE_ENVIRONMENT=Production
       - UID=${UID:-1000}
       - GID=${GID:-1000}

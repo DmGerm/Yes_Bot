@@ -75,7 +75,7 @@ namespace Interface.VoteStorage
         {
             // Получаем домен из переменной окружения или конфигурации
             var domain = Environment.GetEnvironmentVariable("DOMAIN_NAME") ?? "localhost";
-            var port = Environment.GetEnvironmentVariable("PORT_NAMBER") ?? "8080";
+            var port = Environment.GetEnvironmentVariable("PORT_NUMBER") ?? "8080";
 
             return $"http://{domain}:{port}";
         }

@@ -27,7 +27,7 @@ namespace Interface.VoteStorage
             });
 
             var serverAddress = GetServerAddress();
-            return $"{serverAddress}/vote/{token}";
+            return $"{serverAddress}:7030/vote/{token}";
         }
 
         public List<string> GetShopsNames() => _shops;
@@ -73,13 +73,10 @@ namespace Interface.VoteStorage
 
         private string GetServerAddress()
         {
-            var domain = Environment.GetEnvironmentVariable("DOMAIN_NAME") ?? "localhost";
-            var port = Environment.GetEnvironmentVariable("PORT_NUMBER") ?? "8080";
-            Console.WriteLine(domain);
-            Console.WriteLine(port);
+            var address = Environment.GetEnvironmentVariable("DOMAIN_NAME") ?? "http://localhost:7030";
 
-            return $"http://{domain}:{port}";
+            return address.TrimEnd('/');
+
         }
-
     }
 }
